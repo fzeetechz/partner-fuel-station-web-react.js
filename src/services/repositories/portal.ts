@@ -3,6 +3,8 @@ import { createSeed } from '../mock/seed';
 import { changeStock, completeSale } from '../mock/engine';
 import { apiClient, dataMode } from '../api/client';
 import { useAppStore } from '../../store';
+import { validateImport } from '../../features/listings/importEngine';
+import type { ImportMode,ImportRow } from '../../features/listings/importSchema';
 const key = 'neyfuel-database-v1';
 function read(): Database { const raw = localStorage.getItem(key); if (raw) {
     try {
@@ -19,6 +21,8 @@ function guard(owner = false) { const s = useAppStore.getState().session; if (!s
 function checkStation(stationId: string) { const s = guard(); if (!s.stationIds.includes(stationId))
     throw new Error('Station access denied.'); }
 export const portalRepository = {
+    async previewImport(entity:Entity,rows:ImportRow[],stationId:string,mode:ImportMode){guard(true);checkStation(stationId);if(dataMode!=='mock')return (await apiClient.post('/bulk/preview',{entity,rows,stationId,mode})).data;const preview=validateImport(read(),entity,rows,stationId,mode);return {results:preview.results,valid:preview.valid};},
+    async importRows(entity:Entity,rows:ImportRow[],stationId:string,mode:ImportMode){guard(true);checkStation(stationId);if(dataMode!=='mock')return (await apiClient.post('/bulk/import',{entity,rows,stationId,mode})).data;const preview=validateImport(read(),entity,rows,stationId,mode);if(!preview.valid)throw new Error('Import blocked. Some records are invalid or changed since preview. Validate the file again.');write(preview.database);return {count:rows.length};},
     async getSnapshot(): Promise<Database> { const session = guard(); if (dataMode !== 'mock')
         return (await apiClient.get<Database>('/partner/snapshot')).data; await new Promise(r => setTimeout(r, 160)); const db = read(); const allowed = session.stationIds; return Object.fromEntries(Object.entries(db).map(([name, rows]) => [name, rows.filter((r: {
             id: string;

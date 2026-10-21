@@ -63,7 +63,7 @@ Set `VITE_DATA_MODE=api` and `VITE_API_BASE_URL` only after implementing the con
 
 Native SUNMI scanning, NFC, and thermal printing are intentionally outside the web scope. PDF output uses the browser’s Save as PDF destination. Localization currently covers navigation and overview introductory text; other page content is English. Notification preferences are saved locally; event history retains all events.
 
-The supplied logo and PowerFuel requirements document were not present in the repository or attachment. The implementation uses a text wordmark, Lucide fuel symbol, and requested navy/orange palette. Add approved branding assets under `src/assets/branding` and replace `Brand` when available.
+Branding uses the supplied `public/logo/logo.png` across authentication screens, the sidebar, POS previews, printable receipts/invoices, the browser favicon, and the Apple touch icon. The shared `Brand` component preserves the original image proportions. Replace this asset to update the logo throughout the portal. The PowerFuel requirements document was not supplied.
 
 ## Verification
 

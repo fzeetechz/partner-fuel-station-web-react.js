@@ -1,0 +1,120 @@
+.brand {
+  justify-content: center;
+}
+
+.brand-logo {
+  display: block;
+  width: 112px;
+  height: auto;
+  max-width: 100%;
+  aspect-ratio: 1;
+  object-fit: contain;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.sidebar-brand .partner-tag {
+  margin: 7px 0 0 74px;
+  text-align: left;
+  color: #c4d5eb;
+  font-size: 9px;
+  letter-spacing: 1.1px;
+}
+
+.sidebar-brand {
+  padding: 24px 18px 20px;
+  border-bottom: 1px solid #ffffff14;
+  margin-bottom: 18px;
+}
+
+.sidebar-brand .brand {
+  justify-content: flex-start;
+  gap: 12px;
+}
+
+.sidebar-brand .brand-logo {
+  width: 62px;
+  border-radius: 12px;
+  border: 1px solid #ffffff30;
+  box-shadow: 0 4px 16px #00000012;
+}
+
+.sidebar-brand .brand-name {
+  font-size: 27px;
+  font-weight: 800;
+  letter-spacing: -1px;
+  color: #fff;
+}
+
+.auth-art > .brand {
+  justify-content: flex-start;
+  gap: 18px;
+}
+
+.auth-art .brand-logo {
+  width: 84px;
+  border-radius: 14px;
+}
+
+.auth-art .brand-name {
+  font-size: 34px;
+  color: #fff;
+}
+
+.receipt .brand-logo {
+  width: 112px;
+}
+
+.pos-screen .brand-logo {
+  width: 43px;
+  border-radius: 4px;
+}
+
+@media (min-width: 761px) {
+  .sidebar-collapsed .sidebar-brand .brand-logo {
+    width: 44px;
+    max-width: none;
+    border-radius: 6px;
+  }
+
+  .sidebar-collapsed .sidebar-brand {
+    padding: 24px 16px 20px;
+  }
+
+  .sidebar-collapsed .sidebar-brand .brand {
+    justify-content: center;
+  }
+
+  .sidebar-collapsed .brand-name {
+    display: none;
+  }
+}
+
+@media (min-width: 761px) and (max-width: 1250px) {
+  .sidebar-brand .brand-name { font-size: 24px; }
+}
+
+@media (min-width: 761px) and (max-width: 1000px) {
+  .sidebar-brand .brand-logo { width: 50px; }
+  .sidebar-brand .brand { gap: 8px; }
+  .sidebar-brand .brand-name { font-size: 22px; }
+  .sidebar-brand .partner-tag { margin-left: 58px; font-size: 8px; }
+}
+
+@media (max-width: 760px) {
+  .auth-art .brand-logo {
+    width: 64px;
+  }
+
+  .auth-art .brand-name {
+    font-size: 29px;
+  }
+
+  .sidebar-collapsed .sidebar-brand {
+    padding: 24px 18px 20px;
+  }
+
+  .sidebar-collapsed .sidebar-brand .brand-name {
+    display: inline;
+  }
+}
