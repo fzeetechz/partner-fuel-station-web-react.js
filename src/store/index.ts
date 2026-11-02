@@ -1,3 +1,4 @@
+import { clearTokens } from '../services/api/tokens';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { Session } from '../types';
@@ -13,4 +14,4 @@ interface UIState {
     setLanguage: (language: 'en' | 'fr') => void;
     toggleSidebar: () => void;
 }
-export const useAppStore = create<UIState>()(persist(set => ({ session: null, stationId: 'ST-001', theme: 'light', language: 'en', collapsed: false, setSession: session => set({ session }), setStation: stationId => set({ stationId }), setTheme: theme => set({ theme }), setLanguage: language => set({ language }), toggleSidebar: () => set(s => ({ collapsed: !s.collapsed })) }), { name: 'neyfuel-preferences-v1' }));
+export const useAppStore = create<UIState>()(persist(set => ({ session: null, stationId: 'ST-001', theme: 'light', language: 'en', collapsed: false, setSession: session => { if (!session) clearTokens(); set({ session }); }, setStation: stationId => set({ stationId }), setTheme: theme => set({ theme }), setLanguage: language => set({ language }), toggleSidebar: () => set(s => ({ collapsed: !s.collapsed })) }), { name: 'neyfuel-preferences-v1' }));
