@@ -1,11 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import {
-  Link,
-  useLocation,
-  useNavigate,
-  useParams,
-  useSearchParams,
-} from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
   ArrowRight,
@@ -37,8 +31,6 @@ export function AuthScreen({
 }) {
   const navigate = useNavigate();
   const location = useLocation();
-  const { token } = useParams();
-  const [query] = useSearchParams();
   const form = useRef<HTMLFormElement>(null);
   const heading = useRef<HTMLHeadingElement>(null);
   const [email, setEmail] = useState(String(location.state?.email || ""));
@@ -53,24 +45,54 @@ export function AuthScreen({
   const [step, setStep] = useState<"form" | "sent" | "done">("form");
   const [resendAt, setResendAt] = useState(0);
   const [remaining, setRemaining] = useState(0);
+  const [phone, setPhone] = useState("");
+  const [code, setCode] = useState("");
+  const [developmentOtp, setDevelopmentOtp] = useState("");
+  const [expiresAt, setExpiresAt] = useState(0);
+  const [expiresRemaining, setExpiresRemaining] = useState(0);
   const recovery = mode === "forgot" || mode === "reset";
-  const validReset = Boolean(
-    token || query.get("token") || query.get("preview") === "1",
-  );
-  const invalidReset = mode === "reset" && !validReset;
+  const resetting = recovery && step === "sent";
+  const needsPassword = mode === "register" || resetting;
   const isCorporate = portal === "corporate";
   const otpPath = isCorporate ? "/auth/verify" : "/auth/otp";
   useEffect(() => {
     if (step !== "form") heading.current?.focus();
   }, [step]);
   useEffect(() => {
-    if (!resendAt) return;
-    const update = () =>
+    if (!resendAt && !expiresAt) return;
+    const update = () => {
       setRemaining(Math.max(0, Math.ceil((resendAt - Date.now()) / 1000)));
+      setExpiresRemaining(
+        Math.max(0, Math.ceil((expiresAt - Date.now()) / 1000)),
+      );
+    };
     update();
     const timer = window.setInterval(update, 1000);
     return () => window.clearInterval(timer);
-  }, [resendAt]);
+  }, [resendAt, expiresAt]);
+
+  async function requestResetOtp() {
+    setBusy(true);
+    setError("");
+    try {
+      const result = await liveAuth.requestOtp(phone, "RESET");
+      setPhone(phone.trim());
+      setCode("");
+      setDevelopmentOtp(result.developmentOtp || "");
+      setResendAt(Date.now() + result.resendAfter * 1000);
+      setExpiresAt(Date.now() + result.expiresIn * 1000);
+      setStep("sent");
+      setErrors({});
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Unable to request a code. Please try again.",
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -79,22 +101,26 @@ export function AuthScreen({
     const value = (key: string) => String(data.get(key) || "");
     const next: Record<string, string> = {};
     if (
-      ["login", "register", "forgot"].includes(mode) &&
+      ["login", "register"].includes(mode) &&
       !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
     )
       next.email = "Enter a valid email address.";
     if (mode === "login" && !password) next.password = "Enter your password.";
-    if ((mode === "register" || mode === "reset") && password.length < 10)
+    if (needsPassword && password.length < 10)
       next.password = "Use at least 10 characters.";
-    if ((mode === "register" || mode === "reset") && password !== confirm)
+    if (needsPassword && password !== confirm)
       next.confirm = "Your passwords do not match.";
     if (
-      (mode === "register" || mode === "otp") &&
-      !/^\+[1-9]\d{6,14}$/.test(value("phone").trim())
+      (mode === "register" || mode === "otp" || recovery) &&
+      !/^\+[1-9]\d{6,14}$/.test(phone.trim())
     )
       next.phone = "Include your country code, for example +6737123456.";
     if (mode === "register" && value("name").trim().length < 2)
       next.name = "Enter your full name.";
+    if (resetting && !/^\d{6}$/.test(code.trim()))
+      next.code = "Enter the 6-digit verification code.";
+    if (resetting && Date.now() >= expiresAt)
+      next.code = "Your code has expired. Request a new code.";
     setErrors(next);
     setError("");
     if (Object.keys(next).length) {
@@ -108,28 +134,30 @@ export function AuthScreen({
       if (mode === "login") {
         await liveAuth.login(email, password);
         navigate("/dashboard", { replace: true });
-      } else if (mode === "forgot") {
-        // UI preview only: no recovery endpoint has been provided.
-        setEmail(email.trim().toLowerCase());
-        setStep("sent");
-      } else if (mode === "reset") {
-        if (!validReset)
-          throw new Error("Open a reset link or request a new one.");
-        setPassword("");
-        setConfirm("");
-        setStep("done");
+      } else if (recovery) {
+        if (!resetting) {
+          await requestResetOtp();
+        } else {
+          await liveAuth.resetPassword(phone, code, password);
+          setPassword("");
+          setConfirm("");
+          setCode("");
+          setDevelopmentOtp("");
+          setStep("done");
+        }
       } else if (mode === "register") {
         await liveAuth.register({
           name: value("name"),
           email,
-          phone: value("phone"),
+          phone,
           password,
         });
         setPassword("");
         setConfirm("");
         setStep("done");
       } else {
-        const result = await liveAuth.requestOtp(value("phone"));
+        const result = await liveAuth.requestOtp(phone);
+        setDevelopmentOtp(result.developmentOtp || "");
         setResendAt(Date.now() + result.resendAfter * 1000);
         setNotice(
           `Code requested. It expires in ${Math.ceil(result.expiresIn / 60)} minutes. Code verification is not available yet; use your password to sign in.`,
@@ -148,39 +176,36 @@ export function AuthScreen({
 
   const title =
     step === "sent"
-      ? "Check your email."
+      ? "Set a new password."
       : step === "done"
         ? mode === "register"
           ? "Your account is created."
           : "You're all set."
-        : invalidReset
-          ? "Let's get you a new link."
-          : {
-              login: "Welcome back.",
-              register: "Start your journey.",
-              forgot: "Forgot your password?",
-              reset: "Set a new password.",
-              otp: "Sign in with your phone.",
-            }[mode];
+        : {
+            login: "Welcome back.",
+            register: "Start your journey.",
+            forgot: "Forgot your password?",
+            reset: "Set a new password.",
+            otp: "Sign in with your phone.",
+          }[mode];
   const description =
     step === "sent"
-      ? "Here's how the recovery email confirmation will look."
+      ? "Enter the verification code and choose your new password."
       : step === "done"
         ? mode === "register"
           ? "Your driver account is ready. Complete your profile for approval."
-          : "You've completed the password reset preview. Your actual password has not changed."
-        : invalidReset
-          ? "This reset link is missing a token. Request a new link to get back to your account."
-          : {
-              login: isCorporate
-                ? "Your fleet, your team, your next move. All in one place."
-                : "Your station, your team, your next move. All in one place.",
-              register: "Create a NeyFuel driver account to get started.",
-              forgot:
-                "It happens. Enter your account email and we'll help you get back in.",
-              reset: "Choose a strong password you haven't used before.",
-              otp: "Enter your registered mobile number, including the country code.",
-            }[mode];
+          : "Password changed. Please log in again."
+        : {
+            login: isCorporate
+              ? "Your fleet, your team, your next move. All in one place."
+              : "Your station, your team, your next move. All in one place.",
+            register: "Create a NeyFuel driver account to get started.",
+            forgot:
+              "Enter your registered phone number to request a verification code.",
+            reset:
+              "Enter your registered phone number to request a verification code.",
+            otp: "Enter your registered mobile number, including the country code.",
+          }[mode];
   const strength = [
     password.length >= 10,
     /[a-z]/.test(password) && /[A-Z]/.test(password),
@@ -202,7 +227,7 @@ export function AuthScreen({
           <label htmlFor={name}>
             {confirmation
               ? "Confirm password"
-              : mode === "reset"
+              : resetting
                 ? "New password"
                 : "Password"}
           </label>
@@ -324,11 +349,9 @@ export function AuthScreen({
           >
             {step === "done" ? (
               <CheckCircle2 size={25} />
-            ) : step === "sent" || mode === "forgot" ? (
-              <Mail size={25} />
-            ) : mode === "reset" ? (
+            ) : resetting ? (
               <KeyRound size={25} />
-            ) : mode === "otp" ? (
+            ) : mode === "otp" || recovery ? (
               <Phone size={25} />
             ) : (
               <LockKeyhole size={25} />
@@ -342,81 +365,32 @@ export function AuthScreen({
           </h2>
           <p className="nf-description">{description}</p>
           {recovery && (
-            <div className="nf-preview-note">
-              <span>UI PREVIEW</span>{" "}
-              {step === "done"
-                ? "No password has been changed."
-                : "Email delivery and password updates are not connected yet."}
-            </div>
-          )}
-          {recovery && (
             <ol className="nf-steps" aria-label="Password recovery progress">
-              <li
-                className={
-                  mode === "forgot" && step === "form" ? "current" : "complete"
-                }
-              >
-                <span>
-                  {mode === "forgot" && step === "form" ? (
-                    "1"
-                  ) : (
-                    <Check size={12} />
-                  )}
-                </span>
-                Email
+              <li className={step === "form" ? "current" : "complete"}>
+                <span>{step === "form" ? "1" : <Check size={12} />}</span>
+                Phone
               </li>
               <li
                 className={
                   step === "sent"
                     ? "current"
-                    : mode === "reset"
+                    : step === "done"
                       ? "complete"
                       : ""
                 }
               >
-                <span>{mode === "reset" ? <Check size={12} /> : "2"}</span>Reset
-                link
+                <span>{step === "done" ? <Check size={12} /> : "2"}</span>OTP
               </li>
-              <li className={mode === "reset" ? "current" : ""}>
+              <li
+                className={
+                  step === "done" ? "complete" : resetting ? "current" : ""
+                }
+              >
                 <span>3</span>New password
               </li>
             </ol>
           )}
-          {step === "sent" ? (
-            <div className="nf-result">
-              <p>
-                In the connected flow, reset instructions will be sent to{" "}
-                <strong>{email}</strong> if an account exists.
-              </p>
-              <div className="nf-tip">
-                <Mail size={18} />
-                <p>
-                  Check your inbox and spam folder. Use the most recent link to
-                  reset your password.
-                </p>
-              </div>
-              <Link
-                className="nf-primary"
-                to="/auth/reset?preview=1"
-                state={{ email }}
-              >
-                Preview reset password <ArrowRight size={17} />
-              </Link>
-              <button
-                className="nf-text-button"
-                type="button"
-                onClick={() => {
-                  setStep("form");
-                  setError("");
-                }}
-              >
-                Use a different email
-              </button>
-              <p className="nf-small-note">
-                Preview only. No email has been sent.
-              </p>
-            </div>
-          ) : step === "done" ? (
+          {step === "done" ? (
             <div className="nf-result">
               {mode === "register" && (
                 <div className="nf-tip">
@@ -432,10 +406,6 @@ export function AuthScreen({
                 Back to sign in <ArrowRight size={17} />
               </Link>
             </div>
-          ) : invalidReset ? (
-            <Link className="nf-primary" to="/auth/forgot">
-              Request a new reset link <ArrowRight size={17} />
-            </Link>
           ) : (
             <form
               ref={form}
@@ -465,7 +435,7 @@ export function AuthScreen({
                     {fieldError("name")}
                   </div>
                 )}
-                {["login", "register", "forgot"].includes(mode) && (
+                {["login", "register"].includes(mode) && (
                   <div className="nf-field">
                     <label htmlFor="email">Email address</label>
                     <div className="nf-input">
@@ -488,7 +458,9 @@ export function AuthScreen({
                     {fieldError("email")}
                   </div>
                 )}
-                {(mode === "register" || mode === "otp") && (
+                {(mode === "register" ||
+                  mode === "otp" ||
+                  (recovery && !resetting)) && (
                   <div className="nf-field">
                     <label htmlFor="phone">Phone number</label>
                     <div className="nf-input">
@@ -498,6 +470,8 @@ export function AuthScreen({
                         name="phone"
                         type="tel"
                         autoComplete="tel"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
                         placeholder="+673 7123456"
                         required
                         aria-invalid={Boolean(errors.phone)}
@@ -512,9 +486,76 @@ export function AuthScreen({
                     </span>
                   </div>
                 )}
-                {["login", "register", "reset"].includes(mode) &&
-                  passwordField()}
-                {(mode === "register" || mode === "reset") && (
+                {resetting && (
+                  <>
+                    <div className="nf-notice" role="status">
+                      Verification code requested for <strong>{phone}</strong>.
+                      {developmentOtp && (
+                        <div>
+                          OTP: <strong>{developmentOtp}</strong>
+                        </div>
+                      )}
+                      <div>
+                        {expiresRemaining > 0
+                          ? `Code expires in ${expiresRemaining}s.`
+                          : "Your code has expired. Request a new code."}
+                      </div>
+                    </div>
+                    <div className="nf-field">
+                      <label htmlFor="code">Verification code</label>
+                      <div className="nf-input">
+                        <KeyRound size={18} />
+                        <input
+                          id="code"
+                          name="code"
+                          inputMode="numeric"
+                          autoComplete="one-time-code"
+                          maxLength={6}
+                          value={code}
+                          onChange={(e) =>
+                            setCode(e.target.value.replace(/\D/g, ""))
+                          }
+                          placeholder="Enter 6-digit code"
+                          required
+                          aria-invalid={Boolean(errors.code)}
+                          aria-describedby={
+                            errors.code ? "code-error" : undefined
+                          }
+                        />
+                      </div>
+                      {fieldError("code")}
+                    </div>
+                    <button
+                      className="nf-text-button"
+                      type="button"
+                      disabled={busy || remaining > 0}
+                      onClick={() => {
+                        if (!busy && remaining === 0) void requestResetOtp();
+                      }}
+                    >
+                      {remaining > 0
+                        ? `Resend code in ${remaining}s`
+                        : "Resend code"}
+                    </button>
+                    <button
+                      className="nf-text-button"
+                      type="button"
+                      onClick={() => {
+                        setStep("form");
+                        setCode("");
+                        setDevelopmentOtp("");
+                        setPassword("");
+                        setConfirm("");
+                        setErrors({});
+                        setError("");
+                      }}
+                    >
+                      Use a different phone number
+                    </button>
+                  </>
+                )}
+                {(mode === "login" || needsPassword) && passwordField()}
+                {needsPassword && (
                   <>
                     <div className="nf-password-guide">
                       <div
@@ -550,6 +591,9 @@ export function AuthScreen({
                 {notice && (
                   <div className="nf-notice" role="status">
                     {notice}
+                    {mode === "otp" && developmentOtp && (
+                      <div>OTP: <strong>{developmentOtp}</strong></div>
+                    )}
                   </div>
                 )}
                 <button
@@ -568,13 +612,13 @@ export function AuthScreen({
                         ? "Sign in to your workspace"
                         : mode === "register"
                           ? "Create driver account"
-                          : mode === "forgot"
-                            ? "Continue to reset preview"
-                            : mode === "reset"
-                              ? "Preview password update"
-                              : remaining
-                                ? `Request again in ${remaining}s`
-                                : "Request verification code"}
+                          : recovery
+                            ? resetting
+                              ? "Reset password"
+                              : "Request verification code"
+                            : remaining
+                              ? `Request again in ${remaining}s`
+                              : "Request verification code"}
                       <ArrowRight size={17} />
                     </>
                   )}

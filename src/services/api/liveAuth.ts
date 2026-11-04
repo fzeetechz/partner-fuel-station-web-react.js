@@ -17,10 +17,14 @@ interface Envelope<T> {
   message: string;
   data: T;
 }
-export async function authPost<T>(path: string, body: unknown): Promise<T> {
+export async function authPost<T>(
+  path: string,
+  body: unknown,
+  allowNull = false,
+): Promise<T> {
   try {
     const response = await authHttp.post<Envelope<T>>(path, body);
-    if (!response.data.success || !response.data.data)
+    if (!response.data.success || (!allowNull && !response.data.data))
       throw new Error(response.data.message || "Authentication failed.");
     return response.data.data;
   } catch (error) {
@@ -96,16 +100,28 @@ export const liveAuth = {
       password: input.password,
     });
   },
-  requestOtp(phone: string) {
+  requestOtp(phone: string, purpose: "LOGIN" | "RESET" = "LOGIN") {
     if (!/^\+[1-9]\d{6,14}$/.test(phone.trim()))
       return Promise.reject(
         new Error(
           "Enter your phone with country code, for example +6737123456.",
         ),
       );
-    return authPost<{ expiresIn: number; resendAfter: number }>(
-      "/otp/request",
-      { phone: phone.trim(), purpose: "LOGIN" },
+    return authPost<{
+      expiresIn: number;
+      resendAfter: number;
+      developmentOtp?: string;
+    }>("/otp/request", { phone: phone.trim(), purpose });
+  },
+  resetPassword(phone: string, code: string, password: string) {
+    return authPost<null>(
+      "/password/reset",
+      {
+        phone: phone.trim(),
+        code: code.trim(),
+        password,
+      },
+      true,
     );
   },
   refresh(): Promise<Session> {
