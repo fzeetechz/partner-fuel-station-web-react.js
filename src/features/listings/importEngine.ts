@@ -20,7 +20,7 @@ function applyRow(db:Database,entity:Entity,row:ImportRow,stationId:string,mode:
   const timestamp=new Date().toISOString();
   if(entity==='staff') {
     if(db.staff.some(s=>s.email.toLowerCase()===String(value.email).toLowerCase()&&s.id!==id))throw new Error('email: already assigned to another staff member');
-    if(value.joined>timestamp.slice(0,10))throw new Error('joined: cannot be in the future');
+    if(String(value.joined)>timestamp.slice(0,10))throw new Error('joined: cannot be in the future');
     upsert({...value,stationId} as unknown as Staff);
   } else if(entity==='inventory') {
     if(Number(value.quantity)>Number(value.capacity)||Number(value.threshold)>Number(value.capacity))throw new Error('quantity / threshold: cannot exceed tank capacity');

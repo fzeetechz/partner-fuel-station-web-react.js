@@ -9,4 +9,4 @@ import './styles/index.css';
 import './styles/branding.css';
 import './styles/readability.css';
 const queryClient = new QueryClient({ defaultOptions: { queries: { staleTime: 30000, refetchOnWindowFocus: true } } });
-ReactDOM.createRoot(document.getElementById('root')!).render(<React.StrictMode><ErrorBoundary><QueryClientProvider client={queryClient}><BrowserRouter><Router /><Toaster position="bottom-right" richColors closeButton/></BrowserRouter></QueryClientProvider></ErrorBoundary></React.StrictMode>);
+ReactDOM.createRoot(document.getElementById('root')!).render(<React.StrictMode><ErrorBoundary><QueryClientProvider client={queryClient}><BrowserRouter basename={import.meta.env.BASE_URL}><Router /><Toaster position="bottom-right" richColors closeButton/></BrowserRouter></QueryClientProvider></ErrorBoundary></React.StrictMode>);
