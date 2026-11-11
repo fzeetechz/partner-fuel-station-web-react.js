@@ -39,6 +39,7 @@ export interface Field {
     label: string;
     type?: string;
     required?: boolean;
+    autoComplete?: string;
     min?: number;
     max?: number;
     options?: {
@@ -58,13 +59,13 @@ export function DataForm({ fields, initial = {}, onSubmit, label = 'Save changes
     fields.forEach(f => { if (f.type === 'number')
         shape[f.name] = z.coerce.number().min(f.min ?? 0, f.min ? `Minimum value is ${f.min}` : 'Cannot be negative').max(f.max ?? Number.MAX_SAFE_INTEGER);
     else {
-        let rule = z.string().trim();
+        let rule = f.type === 'password' ? z.string() : z.string().trim();
         if (f.required !== false)
             rule = rule.min(1, 'This field is required');
         if (f.type === 'email')
             rule = rule.email('Enter a valid email');
         if (f.type === 'password')
-            rule = rule.min(8, 'Use at least 8 characters');
+            rule = rule.min(f.min ?? 8, `Use at least ${f.min ?? 8} characters`);
         shape[f.name] = rule;
     } });
     const defaults = Object.fromEntries(fields.map(f => [f.name, initial[f.name] ?? f.defaultValue ?? (f.options?.[0]?.value || '')]));
@@ -75,7 +76,7 @@ export function DataForm({ fields, initial = {}, onSubmit, label = 'Save changes
     }
     catch (e) {
         setError(e instanceof Error ? e.message : 'Unable to save');
-    } })}><div className="form-grid">{fields.map(f => <label className="field" key={f.name}><span>{f.label}{f.required !== false && <em> *</em>}</span>{f.options ? <select {...register(f.name)}>{f.options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}</select> : <input {...register(f.name)} type={f.type || 'text'} step={f.type === 'number' ? '0.01' : undefined} autoComplete={f.type === 'password' ? 'new-password' : undefined}/>}{errors[f.name] && <small className="error">{String(errors[f.name]?.message)}</small>}</label>)}</div>{children}{error && <p className="error" role="alert">{error}</p>}<div className="form-footer"><Button type="reset" variant="secondary">Reset</Button><Button type="submit" disabled={isSubmitting}>{isSubmitting ? <LoaderCircle size={16} className="spin"/> : null}{label}</Button></div></form>;
+    } })}><div className="form-grid">{fields.map(f => <label className="field" key={f.name}><span>{f.label}{f.required !== false && <em> *</em>}</span>{f.options ? <select {...register(f.name)}>{f.options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}</select> : <input {...register(f.name)} type={f.type || 'text'} step={f.type === 'number' ? '0.01' : undefined} autoComplete={f.autoComplete || (f.type === 'password' ? 'new-password' : undefined)}/>}{errors[f.name] && <small className="error">{String(errors[f.name]?.message)}</small>}</label>)}</div>{children}{error && <p className="error" role="alert">{error}</p>}<div className="form-footer"><Button type="reset" variant="secondary">Reset</Button><Button type="submit" disabled={isSubmitting}>{isSubmitting ? <LoaderCircle size={16} className="spin"/> : null}{label}</Button></div></form>;
 }
 export interface Column<T> {
     key: string;
