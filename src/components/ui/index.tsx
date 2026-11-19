@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { ArrowDown, ArrowUp, ChevronLeft, ChevronRight, Search, X, Inbox, LoaderCircle } from 'lucide-react';
 import { useForm } from 'react-hook-form';
@@ -20,8 +20,8 @@ export function Modal({ title, children, onClose, wide = false }: {
     children: ReactNode;
     onClose: () => void;
     wide?: boolean;
-}) { useEffect(() => { const prev = document.activeElement as HTMLElement; const handle = (e: KeyboardEvent) => { if (e.key === 'Escape')
-    onClose(); if (e.key === 'Tab') {
+}) { const closeRef = useRef(onClose); closeRef.current = onClose; useEffect(() => { const prev = document.activeElement as HTMLElement; const handle = (e: KeyboardEvent) => { if (e.key === 'Escape')
+    closeRef.current(); if (e.key === 'Tab') {
     const elements = Array.from(document.querySelectorAll<HTMLElement>('.modal button,.modal input,.modal select,.modal textarea,.modal a')).filter(e => !e.hasAttribute('disabled'));
     const first = elements[0], last = elements.at(-1);
     if (e.shiftKey && document.activeElement === first) {
@@ -32,7 +32,7 @@ export function Modal({ title, children, onClose, wide = false }: {
         e.preventDefault();
         first?.focus();
     }
-} }; document.addEventListener('keydown', handle); document.body.style.overflow = 'hidden'; const focusTimer = setTimeout(() => document.querySelector<HTMLElement>('.modal input,.modal button')?.focus(), 0); return () => { clearTimeout(focusTimer); document.removeEventListener('keydown', handle); document.body.style.overflow = ''; prev?.focus(); }; }, [onClose]); return createPortal(<div className="modal-backdrop" onMouseDown={e => { if (e.target === e.currentTarget)
+} }; document.addEventListener('keydown', handle); document.body.style.overflow = 'hidden'; const focusTimer = setTimeout(() => document.querySelector<HTMLElement>('.modal input,.modal button')?.focus(), 0); return () => { clearTimeout(focusTimer); document.removeEventListener('keydown', handle); document.body.style.overflow = ''; prev?.focus(); }; }, []); return createPortal(<div className="modal-backdrop" onMouseDown={e => { if (e.target === e.currentTarget)
     onClose(); }}><section className={`modal ${wide ? 'wide' : ''}`} role="dialog" aria-modal="true" aria-label={title}><div className="modal-heading"><h2>{title}</h2><button className="icon-btn" aria-label="Close dialog" onClick={onClose}><X size={20}/></button></div>{children}</section></div>, document.body); }
 export interface Field {
     name: string;

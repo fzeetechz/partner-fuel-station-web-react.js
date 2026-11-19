@@ -54,7 +54,7 @@ export function AuthScreen({
   const resetting = recovery && step === "sent";
   const needsPassword = mode === "register" || resetting;
   const isCorporate = portal === "corporate";
-  const otpPath = isCorporate ? "/auth/verify" : "/auth/otp";
+  const otpPath = isCorporate ? "/auth/verify" : "/auth/forgot";
   useEffect(() => {
     if (step !== "form") heading.current?.focus();
   }, [step]);
@@ -490,7 +490,7 @@ export function AuthScreen({
                   <>
                     <div className="nf-notice" role="status">
                       Verification code requested for <strong>{phone}</strong>.
-                      {developmentOtp && (
+                      {import.meta.env.DEV && developmentOtp && (
                         <div>
                           OTP: <strong>{developmentOtp}</strong>
                         </div>
@@ -591,7 +591,7 @@ export function AuthScreen({
                 {notice && (
                   <div className="nf-notice" role="status">
                     {notice}
-                    {mode === "otp" && developmentOtp && (
+                    {import.meta.env.DEV && mode === "otp" && developmentOtp && (
                       <div>OTP: <strong>{developmentOtp}</strong></div>
                     )}
                   </div>
@@ -626,7 +626,7 @@ export function AuthScreen({
               </fieldset>
             </form>
           )}
-          {mode === "login" && (
+          {mode === "login" && isCorporate && (
             <>
               <div className="nf-divider">
                 <span>or</span>
@@ -647,6 +647,7 @@ export function AuthScreen({
               Already have an account? <Link to="/auth/login">Sign in</Link>
             </p>
           )}
+          {mode === "login" && !isCorporate && <p className="nf-switch">Station accounts are provided by your administrator.</p>}
           <div className="nf-secure">
             <ShieldCheck size={14} />
             <span>Your account. Your secure workspace.</span>

@@ -1,0 +1,1360 @@
+{
+  "getPublicConfig": {
+    "method": "GET",
+    "path": "/public/config",
+    "summary": "Application configuration and integration capabilities",
+    "folder": "01",
+    "public": true,
+    "body": null,
+    "query": {},
+    "deviceRequired": false,
+    "idempotent": false
+  },
+  "getPublicFuels": {
+    "method": "GET",
+    "path": "/public/fuels",
+    "summary": "Active fuels and current prices",
+    "folder": "01",
+    "public": true,
+    "body": null,
+    "query": {},
+    "deviceRequired": false,
+    "idempotent": false
+  },
+  "getPublicStations": {
+    "method": "GET",
+    "path": "/public/stations",
+    "summary": "Find partner fuel stations",
+    "folder": "01",
+    "public": true,
+    "body": null,
+    "query": {
+      "page": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 100000,
+        "default": 1
+      },
+      "limit": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 100,
+        "default": 20
+      }
+    },
+    "deviceRequired": false,
+    "idempotent": false
+  },
+  "getPublicStationsByIdPhotosByFileId": {
+    "method": "GET",
+    "path": "/public/stations/:id/photos/:fileId",
+    "summary": "View a station photo",
+    "folder": "01",
+    "public": true,
+    "body": null,
+    "query": {},
+    "deviceRequired": false,
+    "idempotent": false
+  },
+  "postPublicAuthLogin": {
+    "method": "POST",
+    "path": "/public/auth/login",
+    "summary": "Email and password login for non-admin accounts",
+    "folder": "01",
+    "public": true,
+    "body": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "format": "email",
+          "maxLength": 254
+        },
+        "password": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 128
+        }
+      },
+      "required": [
+        "email",
+        "password"
+      ],
+      "additionalProperties": false
+    },
+    "query": {},
+    "deviceRequired": false,
+    "idempotent": false
+  },
+  "postPublicAuthOtpRequest": {
+    "method": "POST",
+    "path": "/public/auth/otp/request",
+    "summary": "Request a phone OTP for login or password reset",
+    "folder": "01",
+    "public": true,
+    "body": {
+      "type": "object",
+      "properties": {
+        "phone": {
+          "type": "string",
+          "pattern": "^\\+[1-9]\\d{7,14}$"
+        },
+        "purpose": {
+          "type": "string",
+          "enum": [
+            "LOGIN",
+            "RESET"
+          ],
+          "default": "LOGIN"
+        }
+      },
+      "required": [
+        "phone"
+      ],
+      "additionalProperties": false
+    },
+    "query": {},
+    "deviceRequired": false,
+    "idempotent": false
+  },
+  "postPublicAuthOtpVerify": {
+    "method": "POST",
+    "path": "/public/auth/otp/verify",
+    "summary": "Customer OTP login; creates a USER account on first login",
+    "folder": "01",
+    "public": true,
+    "body": {
+      "type": "object",
+      "properties": {
+        "phone": {
+          "type": "string",
+          "pattern": "^\\+[1-9]\\d{7,14}$"
+        },
+        "code": {
+          "type": "string",
+          "pattern": "^\\d{6}$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        }
+      },
+      "required": [
+        "phone",
+        "code"
+      ],
+      "additionalProperties": false
+    },
+    "query": {},
+    "deviceRequired": false,
+    "idempotent": false
+  },
+  "postPublicAuthRefresh": {
+    "method": "POST",
+    "path": "/public/auth/refresh",
+    "summary": "Rotate a refresh token and issue a new session",
+    "folder": "01",
+    "public": true,
+    "body": {
+      "type": "object",
+      "properties": {
+        "refreshToken": {
+          "type": "string",
+          "minLength": 64,
+          "maxLength": 64
+        }
+      },
+      "required": [
+        "refreshToken"
+      ],
+      "additionalProperties": false
+    },
+    "query": {},
+    "deviceRequired": false,
+    "idempotent": false
+  },
+  "postPublicAuthPasswordReset": {
+    "method": "POST",
+    "path": "/public/auth/password/reset",
+    "summary": "Reset password for an account with a verified phone",
+    "folder": "01",
+    "public": true,
+    "body": {
+      "type": "object",
+      "properties": {
+        "phone": {
+          "type": "string",
+          "pattern": "^\\+[1-9]\\d{7,14}$"
+        },
+        "code": {
+          "type": "string",
+          "pattern": "^\\d{6}$"
+        },
+        "password": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 128
+        }
+      },
+      "required": [
+        "phone",
+        "code",
+        "password"
+      ],
+      "additionalProperties": false
+    },
+    "query": {},
+    "deviceRequired": false,
+    "idempotent": false
+  },
+  "postPublicAuthDriversRegister": {
+    "method": "POST",
+    "path": "/public/auth/drivers/register",
+    "summary": "Register a driver awaiting document review",
+    "folder": "01",
+    "public": true,
+    "body": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "maxLength": 254
+        },
+        "phone": {
+          "type": "string",
+          "pattern": "^\\+[1-9]\\d{7,14}$"
+        },
+        "password": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 128
+        }
+      },
+      "required": [
+        "name",
+        "email",
+        "phone",
+        "password"
+      ],
+      "additionalProperties": false
+    },
+    "query": {},
+    "deviceRequired": false,
+    "idempotent": false
+  },
+  "getStationDashboard": {
+    "method": "GET",
+    "path": "/station/dashboard",
+    "summary": "Station sales, inventory and settlement overview",
+    "folder": "08",
+    "public": false,
+    "body": null,
+    "query": {},
+    "deviceRequired": false,
+    "idempotent": false
+  },
+  "getStationProfile": {
+    "method": "GET",
+    "path": "/station/profile",
+    "summary": "Full station profile including facilities, photos and opening hours",
+    "folder": "08",
+    "public": false,
+    "body": null,
+    "query": {},
+    "deviceRequired": false,
+    "idempotent": false
+  },
+  "patchStationProfile": {
+    "method": "PATCH",
+    "path": "/station/profile",
+    "summary": "Update this station profile, photos, hours and facilities",
+    "folder": "08",
+    "public": false,
+    "body": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 150
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "address": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "city": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "state": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "postalCode": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 20
+        },
+        "phone": {
+          "type": "string",
+          "pattern": "^\\+[1-9]\\d{7,14}$"
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "maxLength": 254
+        },
+        "timezone": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "workingHours": {
+          "type": "object",
+          "properties": {
+            "sun": {
+              "type": "object",
+              "properties": {
+                "open": {
+                  "type": "string",
+                  "pattern": "^(?:[01]\\d|2[0-3]):[0-5]\\d$"
+                },
+                "close": {
+                  "type": "string",
+                  "pattern": "^(?:[01]\\d|2[0-3]):[0-5]\\d$"
+                },
+                "closed": {
+                  "type": "boolean",
+                  "default": false
+                }
+              },
+              "required": [
+                "open",
+                "close"
+              ],
+              "additionalProperties": false
+            },
+            "mon": {
+              "type": "object",
+              "properties": {
+                "open": {
+                  "type": "string",
+                  "pattern": "^(?:[01]\\d|2[0-3]):[0-5]\\d$"
+                },
+                "close": {
+                  "type": "string",
+                  "pattern": "^(?:[01]\\d|2[0-3]):[0-5]\\d$"
+                },
+                "closed": {
+                  "type": "boolean",
+                  "default": false
+                }
+              },
+              "required": [
+                "open",
+                "close"
+              ],
+              "additionalProperties": false
+            },
+            "tue": {
+              "type": "object",
+              "properties": {
+                "open": {
+                  "type": "string",
+                  "pattern": "^(?:[01]\\d|2[0-3]):[0-5]\\d$"
+                },
+                "close": {
+                  "type": "string",
+                  "pattern": "^(?:[01]\\d|2[0-3]):[0-5]\\d$"
+                },
+                "closed": {
+                  "type": "boolean",
+                  "default": false
+                }
+              },
+              "required": [
+                "open",
+                "close"
+              ],
+              "additionalProperties": false
+            },
+            "wed": {
+              "type": "object",
+              "properties": {
+                "open": {
+                  "type": "string",
+                  "pattern": "^(?:[01]\\d|2[0-3]):[0-5]\\d$"
+                },
+                "close": {
+                  "type": "string",
+                  "pattern": "^(?:[01]\\d|2[0-3]):[0-5]\\d$"
+                },
+                "closed": {
+                  "type": "boolean",
+                  "default": false
+                }
+              },
+              "required": [
+                "open",
+                "close"
+              ],
+              "additionalProperties": false
+            },
+            "thu": {
+              "type": "object",
+              "properties": {
+                "open": {
+                  "type": "string",
+                  "pattern": "^(?:[01]\\d|2[0-3]):[0-5]\\d$"
+                },
+                "close": {
+                  "type": "string",
+                  "pattern": "^(?:[01]\\d|2[0-3]):[0-5]\\d$"
+                },
+                "closed": {
+                  "type": "boolean",
+                  "default": false
+                }
+              },
+              "required": [
+                "open",
+                "close"
+              ],
+              "additionalProperties": false
+            },
+            "fri": {
+              "type": "object",
+              "properties": {
+                "open": {
+                  "type": "string",
+                  "pattern": "^(?:[01]\\d|2[0-3]):[0-5]\\d$"
+                },
+                "close": {
+                  "type": "string",
+                  "pattern": "^(?:[01]\\d|2[0-3]):[0-5]\\d$"
+                },
+                "closed": {
+                  "type": "boolean",
+                  "default": false
+                }
+              },
+              "required": [
+                "open",
+                "close"
+              ],
+              "additionalProperties": false
+            },
+            "sat": {
+              "type": "object",
+              "properties": {
+                "open": {
+                  "type": "string",
+                  "pattern": "^(?:[01]\\d|2[0-3]):[0-5]\\d$"
+                },
+                "close": {
+                  "type": "string",
+                  "pattern": "^(?:[01]\\d|2[0-3]):[0-5]\\d$"
+                },
+                "closed": {
+                  "type": "boolean",
+                  "default": false
+                }
+              },
+              "required": [
+                "open",
+                "close"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "sun",
+            "mon",
+            "tue",
+            "wed",
+            "thu",
+            "fri",
+            "sat"
+          ],
+          "additionalProperties": false
+        },
+        "facilities": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60
+          },
+          "maxItems": 30
+        },
+        "photos": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^(?:[A-Z]{3}\\d{5,15}|[a-f\\d]{24})$"
+          },
+          "maxItems": 20
+        }
+      },
+      "additionalProperties": false
+    },
+    "query": {},
+    "deviceRequired": false,
+    "idempotent": false
+  },
+  "getStationFuelPrices": {
+    "method": "GET",
+    "path": "/station/fuel-prices",
+    "summary": "List this station prices and fuel availability",
+    "folder": "08",
+    "public": false,
+    "body": null,
+    "query": {},
+    "deviceRequired": false,
+    "idempotent": false
+  },
+  "patchStationFuelPricesByFuelId": {
+    "method": "PATCH",
+    "path": "/station/fuel-prices/:fuelId",
+    "summary": "Set this station price per litre in XAF whole currency units",
+    "folder": "08",
+    "public": false,
+    "body": {
+      "type": "object",
+      "properties": {
+        "priceMinor": {
+          "type": "integer",
+          "exclusiveMinimum": true,
+          "minimum": 0,
+          "maximum": 100000000
+        }
+      },
+      "required": [
+        "priceMinor"
+      ],
+      "additionalProperties": false
+    },
+    "query": {},
+    "deviceRequired": false,
+    "idempotent": false
+  },
+  "getStationAuthorizations": {
+    "method": "GET",
+    "path": "/station/authorizations",
+    "summary": "Active authorizations assigned to this station",
+    "folder": "08",
+    "public": false,
+    "body": null,
+    "query": {
+      "page": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 100000,
+        "default": 1
+      },
+      "limit": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 100,
+        "default": 20
+      }
+    },
+    "deviceRequired": false,
+    "idempotent": false
+  },
+  "getStationAuthorizationsById": {
+    "method": "GET",
+    "path": "/station/authorizations/:id",
+    "summary": "Assigned station authorization details",
+    "folder": "08",
+    "public": false,
+    "body": null,
+    "query": {},
+    "deviceRequired": false,
+    "idempotent": false
+  },
+  "getStationInventory": {
+    "method": "GET",
+    "path": "/station/inventory",
+    "summary": "Station fuel stock",
+    "folder": "08",
+    "public": false,
+    "body": null,
+    "query": {},
+    "deviceRequired": false,
+    "idempotent": false
+  },
+  "getStationInventoryMovements": {
+    "method": "GET",
+    "path": "/station/inventory/movements",
+    "summary": "Stock movement history",
+    "folder": "08",
+    "public": false,
+    "body": null,
+    "query": {
+      "page": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 100000,
+        "default": 1
+      },
+      "limit": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 100,
+        "default": 20
+      }
+    },
+    "deviceRequired": false,
+    "idempotent": false
+  },
+  "getStationDevices": {
+    "method": "GET",
+    "path": "/station/devices",
+    "summary": "Registered station POS devices",
+    "folder": "08",
+    "public": false,
+    "body": null,
+    "query": {},
+    "deviceRequired": false,
+    "idempotent": false
+  },
+  "postStationDevicesHeartbeat": {
+    "method": "POST",
+    "path": "/station/devices/heartbeat",
+    "summary": "POS device heartbeat",
+    "folder": "08",
+    "public": false,
+    "body": null,
+    "query": {},
+    "deviceRequired": true,
+    "idempotent": false
+  },
+  "postStationAuthorizationsVerify": {
+    "method": "POST",
+    "path": "/station/authorizations/verify",
+    "summary": "Validate scanned QR token or RFID UID",
+    "folder": "08",
+    "public": false,
+    "body": {
+      "type": "object",
+      "properties": {
+        "token": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "cardUid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        }
+      },
+      "additionalProperties": false
+    },
+    "query": {},
+    "deviceRequired": true,
+    "idempotent": false
+  },
+  "postStationDispenses": {
+    "method": "POST",
+    "path": "/station/dispenses",
+    "summary": "Commit fuel dispensing, wallet charge and inventory deduction",
+    "folder": "08",
+    "public": false,
+    "body": {
+      "type": "object",
+      "properties": {
+        "credential": {
+          "type": "object",
+          "properties": {
+            "token": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "cardUid": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          },
+          "additionalProperties": false
+        },
+        "quantityLitres": {
+          "type": "number",
+          "exclusiveMinimum": true,
+          "minimum": 0,
+          "maximum": 100000
+        },
+        "mileage": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10000000
+        },
+        "pin": {
+          "type": "string",
+          "pattern": "^\\d{6}$"
+        }
+      },
+      "required": [
+        "credential",
+        "quantityLitres",
+        "mileage",
+        "pin"
+      ],
+      "additionalProperties": false
+    },
+    "query": {},
+    "deviceRequired": true,
+    "idempotent": true
+  },
+  "getStationTransactions": {
+    "method": "GET",
+    "path": "/station/transactions",
+    "summary": "Station dispensing history",
+    "folder": "08",
+    "public": false,
+    "body": null,
+    "query": {
+      "page": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 100000,
+        "default": 1
+      },
+      "limit": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 100,
+        "default": 20
+      }
+    },
+    "deviceRequired": false,
+    "idempotent": false
+  },
+  "getStationTransactionsByIdReceipt": {
+    "method": "GET",
+    "path": "/station/transactions/:id/receipt",
+    "summary": "Digital receipt data for SUNMI printing or reprinting",
+    "folder": "08",
+    "public": false,
+    "body": null,
+    "query": {},
+    "deviceRequired": false,
+    "idempotent": false
+  },
+  "getStationSettlements": {
+    "method": "GET",
+    "path": "/station/settlements",
+    "summary": "Recorded station settlements",
+    "folder": "08",
+    "public": false,
+    "body": null,
+    "query": {
+      "page": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 100000,
+        "default": 1
+      },
+      "limit": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 100,
+        "default": 20
+      }
+    },
+    "deviceRequired": false,
+    "idempotent": false
+  },
+  "getStationReportsFuel": {
+    "method": "GET",
+    "path": "/station/reports/fuel",
+    "summary": "Station fuel sales report",
+    "folder": "08",
+    "public": false,
+    "body": null,
+    "query": {
+      "from": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "to": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "groupBy": {
+        "type": "string",
+        "enum": [
+          "day",
+          "fuel"
+        ],
+        "default": "day"
+      }
+    },
+    "deviceRequired": false,
+    "idempotent": false
+  },
+  "getStationReportsInventory": {
+    "method": "GET",
+    "path": "/station/reports/inventory",
+    "summary": "Station low stock report",
+    "folder": "08",
+    "public": false,
+    "body": null,
+    "query": {
+      "lowStockOnly": {
+        "type": "string",
+        "enum": [
+          "true",
+          "false"
+        ]
+      }
+    },
+    "deviceRequired": false,
+    "idempotent": false
+  },
+  "getStationOrders": {
+    "method": "GET",
+    "path": "/station/orders",
+    "summary": "Customer delivery requests for your station only",
+    "folder": "08",
+    "public": false,
+    "body": null,
+    "query": {
+      "page": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 100000,
+        "default": 1
+      },
+      "limit": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 100,
+        "default": 20
+      }
+    },
+    "deviceRequired": false,
+    "idempotent": false
+  },
+  "getStationOrdersById": {
+    "method": "GET",
+    "path": "/station/orders/:id",
+    "summary": "Inspect your station delivery order",
+    "folder": "08",
+    "public": false,
+    "body": null,
+    "query": {},
+    "deviceRequired": false,
+    "idempotent": false
+  },
+  "postStationOrdersByIdAccept": {
+    "method": "POST",
+    "path": "/station/orders/:id/accept",
+    "summary": "Station approves order and reserves fuel for nearby drivers",
+    "folder": "08",
+    "public": false,
+    "body": {
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    },
+    "query": {},
+    "deviceRequired": false,
+    "idempotent": true
+  },
+  "postStationOrdersByIdReject": {
+    "method": "POST",
+    "path": "/station/orders/:id/reject",
+    "summary": "Reject pending station order and refund captured payment",
+    "folder": "08",
+    "public": false,
+    "body": {
+      "type": "object",
+      "properties": {
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        }
+      },
+      "required": [
+        "reason"
+      ],
+      "additionalProperties": false
+    },
+    "query": {},
+    "deviceRequired": false,
+    "idempotent": true
+  },
+  "getSharedProfile": {
+    "method": "GET",
+    "path": "/shared/profile",
+    "summary": "Current authenticated profile",
+    "folder": "09",
+    "public": false,
+    "body": null,
+    "query": {},
+    "deviceRequired": false,
+    "idempotent": false
+  },
+  "patchSharedProfile": {
+    "method": "PATCH",
+    "path": "/shared/profile",
+    "summary": "Update name, language, photo and push registration",
+    "folder": "09",
+    "public": false,
+    "body": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "language": {
+          "type": "string",
+          "enum": [
+            "en",
+            "fr"
+          ]
+        },
+        "pushToken": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "photoId": {
+          "type": "string",
+          "pattern": "^(?:[A-Z]{3}\\d{5,15}|[a-f\\d]{24})$"
+        }
+      },
+      "additionalProperties": false
+    },
+    "query": {},
+    "deviceRequired": false,
+    "idempotent": false
+  },
+  "postSharedProfilePassword": {
+    "method": "POST",
+    "path": "/shared/profile/password",
+    "summary": "Change password and revoke every session",
+    "folder": "09",
+    "public": false,
+    "body": {
+      "type": "object",
+      "properties": {
+        "currentPassword": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 128
+        },
+        "newPassword": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 128
+        }
+      },
+      "required": [
+        "currentPassword",
+        "newPassword"
+      ],
+      "additionalProperties": false
+    },
+    "query": {},
+    "deviceRequired": false,
+    "idempotent": false
+  },
+  "postSharedProfileVerifyPhone": {
+    "method": "POST",
+    "path": "/shared/profile/verify-phone",
+    "summary": "Verify the current account phone using a LOGIN OTP",
+    "folder": "09",
+    "public": false,
+    "body": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "pattern": "^\\d{6}$"
+        }
+      },
+      "required": [
+        "code"
+      ],
+      "additionalProperties": false
+    },
+    "query": {},
+    "deviceRequired": false,
+    "idempotent": false
+  },
+  "postSharedProfilePin": {
+    "method": "POST",
+    "path": "/shared/profile/pin",
+    "summary": "Set or change station POS PIN using account password",
+    "folder": "09",
+    "public": false,
+    "body": {
+      "type": "object",
+      "properties": {
+        "password": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 128
+        },
+        "pin": {
+          "type": "string",
+          "pattern": "^\\d{6}$"
+        }
+      },
+      "required": [
+        "password",
+        "pin"
+      ],
+      "additionalProperties": false
+    },
+    "query": {},
+    "deviceRequired": false,
+    "idempotent": false
+  },
+  "postSharedAuthLogout": {
+    "method": "POST",
+    "path": "/shared/auth/logout",
+    "summary": "Revoke the current session immediately",
+    "folder": "09",
+    "public": false,
+    "body": null,
+    "query": {},
+    "deviceRequired": false,
+    "idempotent": false
+  },
+  "getSharedWallet": {
+    "method": "GET",
+    "path": "/shared/wallet",
+    "summary": "Personal or manager corporate wallet balance",
+    "folder": "09",
+    "public": false,
+    "body": null,
+    "query": {},
+    "deviceRequired": false,
+    "idempotent": false
+  },
+  "getSharedWalletTransactions": {
+    "method": "GET",
+    "path": "/shared/wallet/transactions",
+    "summary": "Paginated wallet statement; dates are inclusive ISO timestamps",
+    "folder": "09",
+    "public": false,
+    "body": null,
+    "query": {
+      "page": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 100000,
+        "default": 1
+      },
+      "limit": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 100,
+        "default": 20
+      },
+      "direction": {
+        "type": "string",
+        "enum": [
+          "IN",
+          "OUT"
+        ]
+      },
+      "from": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "to": {
+        "type": "string",
+        "format": "date-time"
+      }
+    },
+    "deviceRequired": false,
+    "idempotent": false
+  },
+  "postSharedPayments": {
+    "method": "POST",
+    "path": "/shared/payments",
+    "summary": "Create an external order payment or wallet top-up intent",
+    "folder": "09",
+    "public": false,
+    "body": {
+      "type": "object",
+      "properties": {
+        "orderId": {
+          "type": "string",
+          "pattern": "^(?:[A-Z]{3}\\d{5,15}|[a-f\\d]{24})$"
+        },
+        "amountMinor": {
+          "type": "integer",
+          "exclusiveMinimum": true,
+          "minimum": 0,
+          "maximum": 100000000
+        },
+        "method": {
+          "type": "string",
+          "enum": [
+            "CARD",
+            "QR",
+            "MOBILE_MONEY"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "query": {},
+    "deviceRequired": false,
+    "idempotent": true
+  },
+  "getSharedPaymentsById": {
+    "method": "GET",
+    "path": "/shared/payments/:id",
+    "summary": "Retrieve payment status",
+    "folder": "09",
+    "public": false,
+    "body": null,
+    "query": {},
+    "deviceRequired": false,
+    "idempotent": false
+  },
+  "postSharedPaymentsByIdCheckout": {
+    "method": "POST",
+    "path": "/shared/payments/:id/checkout",
+    "summary": "Create or retrieve provider checkout URL; safely retry this endpoint",
+    "folder": "09",
+    "public": false,
+    "body": null,
+    "query": {},
+    "deviceRequired": false,
+    "idempotent": false
+  },
+  "getSharedNotifications": {
+    "method": "GET",
+    "path": "/shared/notifications",
+    "summary": "List in-app notifications",
+    "folder": "09",
+    "public": false,
+    "body": null,
+    "query": {
+      "page": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 100000,
+        "default": 1
+      },
+      "limit": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 100,
+        "default": 20
+      }
+    },
+    "deviceRequired": false,
+    "idempotent": false
+  },
+  "patchSharedNotificationsByIdRead": {
+    "method": "PATCH",
+    "path": "/shared/notifications/:id/read",
+    "summary": "Mark your notification as read",
+    "folder": "09",
+    "public": false,
+    "body": null,
+    "query": {},
+    "deviceRequired": false,
+    "idempotent": false
+  },
+  "getSharedSupportTickets": {
+    "method": "GET",
+    "path": "/shared/support/tickets",
+    "summary": "List your support tickets; admins can see all",
+    "folder": "09",
+    "public": false,
+    "body": null,
+    "query": {
+      "page": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 100000,
+        "default": 1
+      },
+      "limit": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 100,
+        "default": 20
+      }
+    },
+    "deviceRequired": false,
+    "idempotent": false
+  },
+  "postSharedSupportTickets": {
+    "method": "POST",
+    "path": "/shared/support/tickets",
+    "summary": "Create a support ticket",
+    "folder": "09",
+    "public": false,
+    "body": {
+      "type": "object",
+      "properties": {
+        "subject": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 150
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "orderId": {
+          "type": "string",
+          "pattern": "^(?:[A-Z]{3}\\d{5,15}|[a-f\\d]{24})$"
+        }
+      },
+      "required": [
+        "subject",
+        "message"
+      ],
+      "additionalProperties": false
+    },
+    "query": {},
+    "deviceRequired": false,
+    "idempotent": false
+  },
+  "postSharedSupportTicketsByIdReplies": {
+    "method": "POST",
+    "path": "/shared/support/tickets/:id/replies",
+    "summary": "Reply to a ticket; admins can update its status",
+    "folder": "09",
+    "public": false,
+    "body": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "OPEN",
+            "IN_PROGRESS",
+            "RESOLVED"
+          ]
+        }
+      },
+      "required": [
+        "message"
+      ],
+      "additionalProperties": false
+    },
+    "query": {},
+    "deviceRequired": false,
+    "idempotent": false
+  },
+  "getSharedOrdersByIdMessages": {
+    "method": "GET",
+    "path": "/shared/orders/:id/messages",
+    "summary": "Read order chat; customer, assigned driver or admin only",
+    "folder": "09",
+    "public": false,
+    "body": null,
+    "query": {
+      "page": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 100000,
+        "default": 1
+      },
+      "limit": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 100,
+        "default": 20
+      }
+    },
+    "deviceRequired": false,
+    "idempotent": false
+  },
+  "postSharedOrdersByIdMessagesRead": {
+    "method": "POST",
+    "path": "/shared/orders/:id/messages/read",
+    "summary": "Mark received order messages as read",
+    "folder": "09",
+    "public": false,
+    "body": null,
+    "query": {},
+    "deviceRequired": false,
+    "idempotent": false
+  },
+  "postSharedOrdersByIdMessages": {
+    "method": "POST",
+    "path": "/shared/orders/:id/messages",
+    "summary": "Send an order chat message",
+    "folder": "09",
+    "public": false,
+    "body": {
+      "type": "object",
+      "properties": {
+        "text": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        }
+      },
+      "required": [
+        "text"
+      ],
+      "additionalProperties": false
+    },
+    "query": {},
+    "deviceRequired": false,
+    "idempotent": false
+  },
+  "postSharedFiles": {
+    "method": "POST",
+    "path": "/shared/files",
+    "summary": "Upload a private PDF, JPEG or PNG; maximum 5 MB",
+    "folder": "09",
+    "public": false,
+    "body": null,
+    "query": {},
+    "deviceRequired": false,
+    "idempotent": false
+  },
+  "getSharedFilesById": {
+    "method": "GET",
+    "path": "/shared/files/:id",
+    "summary": "Download your private file; admins may review driver documents",
+    "folder": "09",
+    "public": false,
+    "body": null,
+    "query": {},
+    "deviceRequired": false,
+    "idempotent": false
+  }
+}

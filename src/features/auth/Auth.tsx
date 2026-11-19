@@ -1,4 +1,4 @@
-import { useLocation, useParams } from "react-router-dom";
+import { Navigate, useLocation, useParams } from "react-router-dom";
 import { AuthScreen, type AuthMode } from "./AuthScreen";
 export function Brand({ withName = false }: { withName?: boolean }) {
   return (
@@ -30,6 +30,7 @@ export function Auth() {
   ].includes(mode)
     ? (mode as AuthMode)
     : "login";
+  if (selected === "register" || selected === "otp") return <Navigate to="/auth/login" replace />;
   return (
     <AuthScreen
       key={location.pathname + location.search}

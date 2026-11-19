@@ -1,0 +1,1787 @@
+{
+  "project": "Ney Fuel Partner Station Portal",
+  "verifiedOn": "2026-11-19",
+  "workspace": "partner-fuel-station-web-react.js",
+  "backend": "https://qkwbdl37-5121.inc1.devtunnels.ms/api/v1",
+  "collection": "NEY_FUEL.postman_collection.json",
+  "collectionSha256": "2a861daf60cd1929a22dd5d23b28704fad571cfc1e97db0fc572c447744a5da3",
+  "summary": {
+    "stationEndpoints": 22,
+    "stationEndpointsWithSuccessfulLiveResponse": 22,
+    "registeredContractsAcrossFolders01_08_09": 53,
+    "readOnlyDiagnosticsPassed": 24,
+    "automatedTests": 56,
+    "apiAndAuthenticationTests": 42,
+    "legacyInventoryEngineTests": 14,
+    "browserScreens": 16,
+    "loadedMobileScreensWithoutHorizontalOverflow": 4
+  },
+  "scopeNotes": [
+    "The supplied real station account was used for login and read-only verification. Price, profile, PIN/password, dispensing, order and notification write flows used a separate QA station and test accounts.",
+    "Customer payment creation returned 403 for STATION. Payment lookup/checkout were checked with missing records and are not offered as station payment actions.",
+    "Public OTP verification returned 403 for station staff: password login is required. Driver registration remains outside station UI and was not executed in this verification run.",
+    "Order message retrieval succeeded. Marking messages read returned 403 for the station account. Sending to a cancelled order returned 409. The UI presents assigned-driver messaging subject to backend permission and keeps closed orders read-only.",
+    "Support creation/reply request validation returned 422; no unsolicited support conversation was opened. These forms are implemented with schema validation and confirmation.",
+    "Nine mutable QA resources were deactivated; test delivery orders were cancelled/rejected, authorizations completed, and test dispensing settled. The backend has no deletion API for private uploads, ledgers, audit records or fixture balances, so this history remains."
+  ],
+  "fixturePrefix": "QA-PARTNER-1795082737",
+  "fixtures": [
+    {
+      "resource": "station",
+      "unitId": "STN10008",
+      "activeAfterVerification": false
+    },
+    {
+      "resource": "fuel",
+      "unitId": "FUL10005",
+      "activeAfterVerification": false
+    },
+    {
+      "resource": "operator",
+      "unitId": "OPR10006",
+      "activeAfterVerification": false
+    },
+    {
+      "resource": "employee",
+      "unitId": "EMP10006",
+      "activeAfterVerification": false
+    },
+    {
+      "resource": "customer",
+      "unitId": "CUS10014",
+      "activeAfterVerification": false
+    },
+    {
+      "resource": "company",
+      "unitId": "CMP10004",
+      "activeAfterVerification": false
+    },
+    {
+      "resource": "vehicle",
+      "unitId": "VEH10003",
+      "activeAfterVerification": false
+    },
+    {
+      "resource": "card",
+      "unitId": "CRD10003",
+      "activeAfterVerification": false
+    },
+    {
+      "resource": "POS device",
+      "unitId": "POS10002",
+      "activeAfterVerification": false
+    }
+  ],
+  "endpoints": [
+    {
+      "operation": "getPublicConfig",
+      "folder": "01",
+      "method": "GET",
+      "path": "/public/config",
+      "summary": "Application configuration and integration capabilities",
+      "ui": "Workspace currency and integration metadata",
+      "outcome": "live success",
+      "status": 200,
+      "message": "Request successful",
+      "responseDataShape": {
+        "name": "string",
+        "currency": "string",
+        "currencySymbol": "string",
+        "currencyFractionDigits": "number",
+        "quantityUnit": "string",
+        "monetaryUnit": "string",
+        "languages": [
+          "string"
+        ],
+        "deliveryPricing": {
+          "deliveryPerKmMinor": "number",
+          "driverPerKmMinor": "number",
+          "driverRadiusKm": "number",
+          "stationSearchRadiusKm": "number",
+          "taxPercent": "number"
+        },
+        "deliveryDistanceBasis": "string",
+        "paymentMethods": [
+          "string"
+        ],
+        "smsConfigured": "boolean",
+        "realtimeTransport": "string",
+        "offlineDispensingSupported": "boolean"
+      }
+    },
+    {
+      "operation": "getPublicFuels",
+      "folder": "01",
+      "method": "GET",
+      "path": "/public/fuels",
+      "summary": "Active fuels and current prices",
+      "ui": "Station fuel catalogue lookup",
+      "outcome": "live success",
+      "status": 200,
+      "message": "Request successful",
+      "responseDataShape": [
+        {
+          "_id": "string",
+          "code": "string",
+          "active": "boolean",
+          "name": "string",
+          "unit": "string",
+          "unitId": "string"
+        }
+      ]
+    },
+    {
+      "operation": "getPublicStations",
+      "folder": "01",
+      "method": "GET",
+      "path": "/public/stations",
+      "summary": "Find partner fuel stations",
+      "ui": "Public API diagnostics; consumer station discovery",
+      "outcome": "live success",
+      "status": 200,
+      "message": "Stations retrieved",
+      "responseDataShape": [
+        {
+          "_id": "string",
+          "name": "string",
+          "code": "string",
+          "address": "string",
+          "city": "string",
+          "country": "string",
+          "latitude": "number",
+          "longitude": "number",
+          "timezone": "string",
+          "facilities": [
+            "string"
+          ],
+          "photos": [
+            "string"
+          ],
+          "verified": "boolean",
+          "ratingAverage": "number",
+          "ratingCount": "number",
+          "kind": "string",
+          "active": "boolean",
+          "workingHours": {
+            "sun": {
+              "open": "string",
+              "close": "string",
+              "closed": "boolean"
+            },
+            "mon": {
+              "open": "string",
+              "close": "string",
+              "closed": "boolean"
+            },
+            "tue": {
+              "open": "string",
+              "close": "string",
+              "closed": "boolean"
+            },
+            "wed": {
+              "open": "string",
+              "close": "string",
+              "closed": "boolean"
+            },
+            "thu": {
+              "open": "string",
+              "close": "string",
+              "closed": "boolean"
+            },
+            "fri": {
+              "open": "string",
+              "close": "string",
+              "closed": "boolean"
+            },
+            "sat": {
+              "open": "string",
+              "close": "string",
+              "closed": "boolean"
+            }
+          },
+          "createdAt": "string",
+          "updatedAt": "string",
+          "unitId": "string",
+          "description": "string",
+          "email": "string",
+          "phone": "string",
+          "postalCode": "string"
+        }
+      ]
+    },
+    {
+      "operation": "getPublicStationsByIdPhotosByFileId",
+      "folder": "01",
+      "method": "GET",
+      "path": "/public/stations/:id/photos/:fileId",
+      "summary": "View a station photo",
+      "ui": "/stations photo gallery",
+      "outcome": "live success",
+      "status": 200,
+      "message": "Binary file downloaded",
+      "responseDataShape": {
+        "mimeType": "string",
+        "size": "number"
+      }
+    },
+    {
+      "operation": "postPublicAuthLogin",
+      "folder": "01",
+      "method": "POST",
+      "path": "/public/auth/login",
+      "summary": "Email and password login for non-admin accounts",
+      "ui": "/auth/login",
+      "outcome": "live success",
+      "status": 200,
+      "message": "Logged in successfully",
+      "responseDataShape": {
+        "user": {
+          "_id": "string",
+          "name": "string",
+          "email": "string",
+          "role": "string",
+          "active": "boolean",
+          "station": "string",
+          "language": "string",
+          "phoneVerified": "boolean",
+          "tokenVersion": "number",
+          "allowanceMl": "number",
+          "usedMl": "number",
+          "reservedMl": "number",
+          "createdAt": "string",
+          "updatedAt": "string",
+          "unitId": "string",
+          "phone": "string",
+          "photo": "string"
+        },
+        "accessToken": "string",
+        "refreshToken": "string",
+        "expiresIn": "number",
+        "tokenType": "string"
+      }
+    },
+    {
+      "operation": "postPublicAuthOtpRequest",
+      "folder": "01",
+      "method": "POST",
+      "path": "/public/auth/otp/request",
+      "summary": "Request a phone OTP for login or password reset",
+      "ui": "/auth/forgot; phone verification in /settings",
+      "outcome": "live success",
+      "status": 200,
+      "message": "Verification code requested",
+      "responseDataShape": {
+        "expiresIn": "number",
+        "resendAfter": "number",
+        "developmentOtp": "string"
+      }
+    },
+    {
+      "operation": "postPublicAuthOtpVerify",
+      "folder": "01",
+      "method": "POST",
+      "path": "/public/auth/otp/verify",
+      "summary": "Customer OTP login; creates a USER account on first login",
+      "ui": "Not exposed: backend rejects staff OTP login",
+      "outcome": "guard or validation response verified",
+      "status": 403,
+      "message": "Staff accounts must use password login"
+    },
+    {
+      "operation": "postPublicAuthRefresh",
+      "folder": "01",
+      "method": "POST",
+      "path": "/public/auth/refresh",
+      "summary": "Rotate a refresh token and issue a new session",
+      "ui": "Automatic session refresh",
+      "outcome": "live success",
+      "status": 200,
+      "message": "Session refreshed",
+      "responseDataShape": {
+        "user": {
+          "_id": "string",
+          "name": "string",
+          "email": "string",
+          "phone": "string",
+          "role": "string",
+          "active": "boolean",
+          "station": "string",
+          "photo": "string",
+          "language": "string",
+          "phoneVerified": "boolean",
+          "tokenVersion": "number",
+          "allowanceMl": "number",
+          "usedMl": "number",
+          "reservedMl": "number",
+          "createdAt": "string",
+          "updatedAt": "string",
+          "unitId": "string"
+        },
+        "accessToken": "string",
+        "refreshToken": "string",
+        "expiresIn": "number",
+        "tokenType": "string"
+      }
+    },
+    {
+      "operation": "postPublicAuthPasswordReset",
+      "folder": "01",
+      "method": "POST",
+      "path": "/public/auth/password/reset",
+      "summary": "Reset password for an account with a verified phone",
+      "ui": "/auth/forgot; phone verification in /settings",
+      "outcome": "live success",
+      "status": 200,
+      "message": "Password changed. Please log in again.",
+      "responseDataShape": "null"
+    },
+    {
+      "operation": "postPublicAuthDriversRegister",
+      "folder": "01",
+      "method": "POST",
+      "path": "/public/auth/drivers/register",
+      "summary": "Register a driver awaiting document review",
+      "ui": "Not exposed: driver onboarding is outside station access",
+      "outcome": "outside station workflow",
+      "status": null
+    },
+    {
+      "operation": "getStationDashboard",
+      "folder": "08",
+      "method": "GET",
+      "path": "/station/dashboard",
+      "summary": "Station sales, inventory and settlement overview",
+      "ui": "/dashboard",
+      "outcome": "live success",
+      "status": 200,
+      "message": "Request successful",
+      "responseDataShape": {
+        "user": {
+          "_id": "string",
+          "name": "string",
+          "email": "string",
+          "phone": "string",
+          "role": "string",
+          "active": "boolean",
+          "station": "string",
+          "photo": "string",
+          "language": "string",
+          "phoneVerified": "boolean",
+          "tokenVersion": "number",
+          "allowanceMl": "number",
+          "usedMl": "number",
+          "reservedMl": "number",
+          "createdAt": "string",
+          "updatedAt": "string",
+          "unitId": "string"
+        },
+        "station": {
+          "_id": "string",
+          "name": "string",
+          "code": "string",
+          "address": "string",
+          "city": "string",
+          "postalCode": "string",
+          "country": "string",
+          "phone": "string",
+          "email": "string",
+          "latitude": "number",
+          "longitude": "number",
+          "timezone": "string",
+          "workingHours": {
+            "sun": {
+              "open": "string",
+              "close": "string",
+              "closed": "boolean"
+            },
+            "mon": {
+              "open": "string",
+              "close": "string",
+              "closed": "boolean"
+            },
+            "tue": {
+              "open": "string",
+              "close": "string",
+              "closed": "boolean"
+            },
+            "wed": {
+              "open": "string",
+              "close": "string",
+              "closed": "boolean"
+            },
+            "thu": {
+              "open": "string",
+              "close": "string",
+              "closed": "boolean"
+            },
+            "fri": {
+              "open": "string",
+              "close": "string",
+              "closed": "boolean"
+            },
+            "sat": {
+              "open": "string",
+              "close": "string",
+              "closed": "boolean"
+            }
+          },
+          "facilities": [
+            "string"
+          ],
+          "photos": [
+            "string"
+          ],
+          "verified": "boolean",
+          "ratingAverage": "number",
+          "ratingCount": "number",
+          "kind": "string",
+          "active": "boolean",
+          "createdAt": "string",
+          "updatedAt": "string",
+          "unitId": "string"
+        },
+        "unreadNotifications": "number",
+        "inventory": [
+          {
+            "_id": "string",
+            "station": "string",
+            "fuel": {
+              "_id": "string",
+              "code": "string",
+              "name": "string"
+            },
+            "priceMinor": "number",
+            "priceConfigured": "boolean",
+            "quantityMl": "number",
+            "lowStockMl": "number",
+            "createdAt": "string",
+            "updatedAt": "string",
+            "unitId": "string"
+          }
+        ],
+        "lowStock": [
+          {
+            "_id": "string",
+            "station": "string",
+            "fuel": {
+              "_id": "string",
+              "code": "string",
+              "name": "string"
+            },
+            "priceMinor": "number",
+            "priceConfigured": "boolean",
+            "quantityMl": "number",
+            "lowStockMl": "number",
+            "createdAt": "string",
+            "updatedAt": "string",
+            "unitId": "string"
+          }
+        ],
+        "today": {
+          "transactions": "number",
+          "salesMinor": "number",
+          "quantityMl": "number"
+        },
+        "unsettled": {
+          "totalMinor": "number",
+          "transactions": "number"
+        },
+        "reportingTimezone": "string"
+      }
+    },
+    {
+      "operation": "getStationProfile",
+      "folder": "08",
+      "method": "GET",
+      "path": "/station/profile",
+      "summary": "Full station profile including facilities, photos and opening hours",
+      "ui": "/stations",
+      "outcome": "live success",
+      "status": 200,
+      "message": "Request successful",
+      "responseDataShape": {
+        "_id": "string",
+        "name": "string",
+        "code": "string",
+        "address": "string",
+        "city": "string",
+        "postalCode": "string",
+        "country": "string",
+        "phone": "string",
+        "email": "string",
+        "latitude": "number",
+        "longitude": "number",
+        "timezone": "string",
+        "workingHours": {
+          "sun": {
+            "open": "string",
+            "close": "string",
+            "closed": "boolean"
+          },
+          "mon": {
+            "open": "string",
+            "close": "string",
+            "closed": "boolean"
+          },
+          "tue": {
+            "open": "string",
+            "close": "string",
+            "closed": "boolean"
+          },
+          "wed": {
+            "open": "string",
+            "close": "string",
+            "closed": "boolean"
+          },
+          "thu": {
+            "open": "string",
+            "close": "string",
+            "closed": "boolean"
+          },
+          "fri": {
+            "open": "string",
+            "close": "string",
+            "closed": "boolean"
+          },
+          "sat": {
+            "open": "string",
+            "close": "string",
+            "closed": "boolean"
+          }
+        },
+        "facilities": [
+          "string"
+        ],
+        "photos": [
+          "string"
+        ],
+        "verified": "boolean",
+        "ratingAverage": "number",
+        "ratingCount": "number",
+        "kind": "string",
+        "active": "boolean",
+        "createdAt": "string",
+        "updatedAt": "string",
+        "unitId": "string",
+        "currency": "string",
+        "currencySymbol": "string",
+        "currencyFractionDigits": "number"
+      }
+    },
+    {
+      "operation": "patchStationProfile",
+      "folder": "08",
+      "method": "PATCH",
+      "path": "/station/profile",
+      "summary": "Update this station profile, photos, hours and facilities",
+      "ui": "/stations",
+      "outcome": "live success",
+      "status": 200,
+      "message": "Station profile updated",
+      "responseDataShape": {
+        "_id": "string",
+        "name": "string",
+        "code": "string",
+        "address": "string",
+        "city": "string",
+        "country": "string",
+        "latitude": "number",
+        "longitude": "number",
+        "timezone": "string",
+        "facilities": [
+          "string"
+        ],
+        "photos": [
+          "string"
+        ],
+        "verified": "boolean",
+        "ratingAverage": "number",
+        "ratingCount": "number",
+        "kind": "string",
+        "active": "boolean",
+        "workingHours": {
+          "sun": {
+            "open": "string",
+            "close": "string",
+            "closed": "boolean"
+          },
+          "mon": {
+            "open": "string",
+            "close": "string",
+            "closed": "boolean"
+          },
+          "tue": {
+            "open": "string",
+            "close": "string",
+            "closed": "boolean"
+          },
+          "wed": {
+            "open": "string",
+            "close": "string",
+            "closed": "boolean"
+          },
+          "thu": {
+            "open": "string",
+            "close": "string",
+            "closed": "boolean"
+          },
+          "fri": {
+            "open": "string",
+            "close": "string",
+            "closed": "boolean"
+          },
+          "sat": {
+            "open": "string",
+            "close": "string",
+            "closed": "boolean"
+          }
+        },
+        "createdAt": "string",
+        "updatedAt": "string",
+        "unitId": "string",
+        "description": "string",
+        "email": "string",
+        "phone": "string",
+        "postalCode": "string"
+      }
+    },
+    {
+      "operation": "getStationFuelPrices",
+      "folder": "08",
+      "method": "GET",
+      "path": "/station/fuel-prices",
+      "summary": "List this station prices and fuel availability",
+      "ui": "/fuel-prices",
+      "outcome": "live success",
+      "status": 200,
+      "message": "Station fuel prices retrieved",
+      "responseDataShape": [
+        {
+          "fuelId": "string",
+          "code": "string",
+          "name": "string",
+          "priceMinor": "null",
+          "priceConfigured": "boolean",
+          "availableLitres": "number",
+          "currency": "string",
+          "currencySymbol": "string",
+          "currencyFractionDigits": "number"
+        }
+      ]
+    },
+    {
+      "operation": "patchStationFuelPricesByFuelId",
+      "folder": "08",
+      "method": "PATCH",
+      "path": "/station/fuel-prices/:fuelId",
+      "summary": "Set this station price per litre in XAF whole currency units",
+      "ui": "/fuel-prices",
+      "outcome": "live success",
+      "status": 200,
+      "message": "Station fuel price updated",
+      "responseDataShape": {
+        "fuelId": "string",
+        "name": "string",
+        "priceMinor": "number",
+        "priceConfigured": "boolean",
+        "currency": "string",
+        "currencySymbol": "string",
+        "currencyFractionDigits": "number"
+      }
+    },
+    {
+      "operation": "getStationAuthorizations",
+      "folder": "08",
+      "method": "GET",
+      "path": "/station/authorizations",
+      "summary": "Active authorizations assigned to this station",
+      "ui": "/authorizations",
+      "outcome": "live success",
+      "status": 200,
+      "message": "Station authorizations retrieved",
+      "responseDataShape": [
+        {
+          "_id": "string",
+          "number": "string",
+          "company": {
+            "_id": "string",
+            "name": "string",
+            "unitId": "string"
+          },
+          "employee": {
+            "_id": "string",
+            "name": "string",
+            "unitId": "string"
+          },
+          "vehicle": {
+            "_id": "string",
+            "registrationNumber": "string",
+            "model": "string",
+            "capacityMl": "number",
+            "unitId": "string"
+          },
+          "fuel": {
+            "_id": "string",
+            "name": "string",
+            "code": "string",
+            "unitId": "string"
+          },
+          "station": "string",
+          "quantityMl": "number",
+          "remainingMl": "number",
+          "status": "string",
+          "method": "string",
+          "card": "string",
+          "expiresAt": "string",
+          "note": "string",
+          "createdBy": "string",
+          "createdAt": "string",
+          "updatedAt": "string",
+          "unitId": "string"
+        }
+      ]
+    },
+    {
+      "operation": "getStationAuthorizationsById",
+      "folder": "08",
+      "method": "GET",
+      "path": "/station/authorizations/:id",
+      "summary": "Assigned station authorization details",
+      "ui": "/authorizations",
+      "outcome": "live success",
+      "status": 200,
+      "message": "Request successful",
+      "responseDataShape": {
+        "_id": "string",
+        "number": "string",
+        "company": {
+          "_id": "string",
+          "name": "string",
+          "unitId": "string"
+        },
+        "employee": {
+          "_id": "string",
+          "name": "string",
+          "unitId": "string"
+        },
+        "vehicle": {
+          "_id": "string",
+          "registrationNumber": "string",
+          "model": "string",
+          "capacityMl": "number",
+          "unitId": "string"
+        },
+        "fuel": {
+          "_id": "string",
+          "name": "string",
+          "code": "string",
+          "unitId": "string"
+        },
+        "station": "string",
+        "quantityMl": "number",
+        "remainingMl": "number",
+        "status": "string",
+        "method": "string",
+        "card": "string",
+        "expiresAt": "string",
+        "note": "string",
+        "createdBy": "string",
+        "createdAt": "string",
+        "updatedAt": "string",
+        "unitId": "string"
+      }
+    },
+    {
+      "operation": "getStationInventory",
+      "folder": "08",
+      "method": "GET",
+      "path": "/station/inventory",
+      "summary": "Station fuel stock",
+      "ui": "/inventory",
+      "outcome": "live success",
+      "status": 200,
+      "message": "Request successful",
+      "responseDataShape": [
+        {
+          "_id": "string",
+          "station": "string",
+          "fuel": {
+            "_id": "string",
+            "code": "string",
+            "active": "boolean",
+            "name": "string",
+            "priceMinor": "number",
+            "unitId": "string"
+          },
+          "priceMinor": "number",
+          "priceConfigured": "boolean",
+          "quantityMl": "number",
+          "lowStockMl": "number",
+          "createdAt": "string",
+          "updatedAt": "string",
+          "unitId": "string",
+          "unitPriceMinor": "number",
+          "currency": "string",
+          "currencySymbol": "string",
+          "currencyFractionDigits": "number"
+        }
+      ]
+    },
+    {
+      "operation": "getStationInventoryMovements",
+      "folder": "08",
+      "method": "GET",
+      "path": "/station/inventory/movements",
+      "summary": "Stock movement history",
+      "ui": "/inventory",
+      "outcome": "live success",
+      "status": 200,
+      "message": "Stock movements retrieved",
+      "responseDataShape": [
+        {
+          "_id": "string",
+          "station": "string",
+          "fuel": "string",
+          "quantityMl": "number",
+          "type": "string",
+          "reference": "string",
+          "note": "string",
+          "actor": "string",
+          "createdAt": "string",
+          "updatedAt": "string",
+          "unitId": "string"
+        }
+      ]
+    },
+    {
+      "operation": "getStationDevices",
+      "folder": "08",
+      "method": "GET",
+      "path": "/station/devices",
+      "summary": "Registered station POS devices",
+      "ui": "/pos-devices",
+      "outcome": "live success",
+      "status": 200,
+      "message": "Request successful",
+      "responseDataShape": []
+    },
+    {
+      "operation": "postStationDevicesHeartbeat",
+      "folder": "08",
+      "method": "POST",
+      "path": "/station/devices/heartbeat",
+      "summary": "POS device heartbeat",
+      "ui": "/pos-devices",
+      "outcome": "live success",
+      "status": 200,
+      "message": "Request successful",
+      "responseDataShape": {
+        "deviceId": "string",
+        "lastSeenAt": "string"
+      }
+    },
+    {
+      "operation": "postStationAuthorizationsVerify",
+      "folder": "08",
+      "method": "POST",
+      "path": "/station/authorizations/verify",
+      "summary": "Validate scanned QR token or RFID UID",
+      "ui": "/dispense",
+      "outcome": "live success",
+      "status": 200,
+      "message": "Request successful",
+      "responseDataShape": {
+        "authorization": {
+          "_id": "string",
+          "number": "string",
+          "company": "string",
+          "employee": "string",
+          "vehicle": "string",
+          "fuel": "string",
+          "station": "string",
+          "quantityMl": "number",
+          "remainingMl": "number",
+          "status": "string",
+          "method": "string",
+          "card": "string",
+          "expiresAt": "string",
+          "note": "string",
+          "createdBy": "string",
+          "createdAt": "string",
+          "updatedAt": "string",
+          "unitId": "string"
+        },
+        "fuel": {
+          "_id": "string",
+          "name": "string",
+          "code": "string",
+          "unitId": "string"
+        },
+        "company": {
+          "id": "string",
+          "name": "string"
+        },
+        "employee": {
+          "id": "string",
+          "name": "string"
+        },
+        "vehicle": {
+          "vehicleDocuments": {
+            "photos": {
+              "front": "string",
+              "rear": "string",
+              "left": "string",
+              "right": "string"
+            },
+            "registrationCertificate": "string",
+            "insuranceCertificate": "string"
+          },
+          "_id": "string",
+          "company": "string",
+          "registrationNumber": "string",
+          "model": "string",
+          "type": "string",
+          "year": "number",
+          "fuel": "string",
+          "capacityMl": "number",
+          "mileage": "number",
+          "authorizationVersion": "number",
+          "active": "boolean",
+          "createdAt": "string",
+          "updatedAt": "string",
+          "unitId": "string",
+          "employee": "string"
+        }
+      }
+    },
+    {
+      "operation": "postStationDispenses",
+      "folder": "08",
+      "method": "POST",
+      "path": "/station/dispenses",
+      "summary": "Commit fuel dispensing, wallet charge and inventory deduction",
+      "ui": "/dispense",
+      "outcome": "live success",
+      "status": 201,
+      "message": "Fuel dispensed",
+      "responseDataShape": {
+        "receipt": {
+          "number": "string",
+          "authorization": "string",
+          "company": "string",
+          "employee": "string",
+          "vehicle": "string",
+          "station": "string",
+          "operator": "string",
+          "device": "string",
+          "fuel": "string",
+          "quantityMl": "number",
+          "unitPriceMinor": "number",
+          "totalMinor": "number",
+          "currency": "string",
+          "mileage": "number",
+          "settled": "boolean",
+          "_id": "string",
+          "createdAt": "string",
+          "updatedAt": "string",
+          "unitId": "string"
+        },
+        "authorization": {
+          "_id": "string",
+          "number": "string",
+          "company": "string",
+          "employee": "string",
+          "vehicle": "string",
+          "fuel": "string",
+          "station": "string",
+          "quantityMl": "number",
+          "remainingMl": "number",
+          "status": "string",
+          "method": "string",
+          "card": "string",
+          "expiresAt": "string",
+          "note": "string",
+          "createdBy": "string",
+          "createdAt": "string",
+          "updatedAt": "string",
+          "unitId": "string"
+        },
+        "remainingWalletMinor": "number"
+      }
+    },
+    {
+      "operation": "getStationTransactions",
+      "folder": "08",
+      "method": "GET",
+      "path": "/station/transactions",
+      "summary": "Station dispensing history",
+      "ui": "/transactions",
+      "outcome": "live success",
+      "status": 200,
+      "message": "Transactions retrieved",
+      "responseDataShape": []
+    },
+    {
+      "operation": "getStationTransactionsByIdReceipt",
+      "folder": "08",
+      "method": "GET",
+      "path": "/station/transactions/:id/receipt",
+      "summary": "Digital receipt data for SUNMI printing or reprinting",
+      "ui": "/transactions",
+      "outcome": "live success",
+      "status": 200,
+      "message": "Request successful",
+      "responseDataShape": {
+        "_id": "string",
+        "number": "string",
+        "authorization": "string",
+        "company": {
+          "_id": "string",
+          "name": "string"
+        },
+        "employee": "string",
+        "vehicle": {
+          "_id": "string",
+          "registrationNumber": "string",
+          "model": "string"
+        },
+        "station": "string",
+        "operator": "string",
+        "device": "string",
+        "fuel": {
+          "_id": "string",
+          "name": "string",
+          "code": "string"
+        },
+        "quantityMl": "number",
+        "unitPriceMinor": "number",
+        "totalMinor": "number",
+        "currency": "string",
+        "mileage": "number",
+        "settled": "boolean",
+        "createdAt": "string",
+        "updatedAt": "string",
+        "unitId": "string"
+      }
+    },
+    {
+      "operation": "getStationSettlements",
+      "folder": "08",
+      "method": "GET",
+      "path": "/station/settlements",
+      "summary": "Recorded station settlements",
+      "ui": "/settlements",
+      "outcome": "live success",
+      "status": 200,
+      "message": "Settlements retrieved",
+      "responseDataShape": [
+        {
+          "_id": "string",
+          "station": "string",
+          "amountMinor": "number",
+          "currency": "string",
+          "transactionCount": "number",
+          "reference": "string",
+          "actor": "string",
+          "createdAt": "string",
+          "updatedAt": "string",
+          "unitId": "string"
+        }
+      ]
+    },
+    {
+      "operation": "getStationReportsFuel",
+      "folder": "08",
+      "method": "GET",
+      "path": "/station/reports/fuel",
+      "summary": "Station fuel sales report",
+      "ui": "/reports",
+      "outcome": "live success",
+      "status": 200,
+      "message": "Fuel report generated",
+      "responseDataShape": [
+        {
+          "_id": "string",
+          "transactions": "number",
+          "quantityMl": "number",
+          "totalMinor": "number",
+          "currency": "string"
+        }
+      ]
+    },
+    {
+      "operation": "getStationReportsInventory",
+      "folder": "08",
+      "method": "GET",
+      "path": "/station/reports/inventory",
+      "summary": "Station low stock report",
+      "ui": "/reports",
+      "outcome": "live success",
+      "status": 200,
+      "message": "Request successful",
+      "responseDataShape": [
+        {
+          "_id": "string",
+          "station": {
+            "_id": "string",
+            "name": "string",
+            "code": "string"
+          },
+          "fuel": {
+            "_id": "string",
+            "code": "string",
+            "name": "string"
+          },
+          "priceMinor": "number",
+          "priceConfigured": "boolean",
+          "quantityMl": "number",
+          "lowStockMl": "number",
+          "createdAt": "string",
+          "updatedAt": "string",
+          "unitId": "string"
+        }
+      ]
+    },
+    {
+      "operation": "getStationOrders",
+      "folder": "08",
+      "method": "GET",
+      "path": "/station/orders",
+      "summary": "Customer delivery requests for your station only",
+      "ui": "/orders",
+      "outcome": "live success",
+      "status": 200,
+      "message": "Orders retrieved",
+      "responseDataShape": [
+        {
+          "_id": "string",
+          "number": "string",
+          "user": {
+            "_id": "string",
+            "name": "string",
+            "phone": "string",
+            "unitId": "string"
+          },
+          "fuel": {
+            "_id": "string",
+            "code": "string",
+            "name": "string",
+            "unitId": "string"
+          },
+          "fuelName": "string",
+          "quantityMl": "number",
+          "unitPriceMinor": "number",
+          "totalMinor": "number",
+          "deliveryFeeMinor": "number",
+          "driverFeeMinor": "number",
+          "currency": "string",
+          "address": {
+            "_id": "string",
+            "user": "string",
+            "label": "string",
+            "recipient": "string",
+            "phone": "string",
+            "line1": "string",
+            "city": "string",
+            "postalCode": "string",
+            "country": "string",
+            "latitude": "number",
+            "longitude": "number",
+            "isDefault": "boolean",
+            "createdAt": "string",
+            "updatedAt": "string",
+            "unitId": "string"
+          },
+          "scheduledAt": "string",
+          "windowEnd": "string",
+          "paymentMethod": "string",
+          "paymentStatus": "string",
+          "paymentAttempts": "number",
+          "status": "string",
+          "distanceMetres": "number",
+          "distanceBasis": "string",
+          "itemsSubtotalMinor": "number",
+          "taxPercent": "number",
+          "taxMinor": "number",
+          "platformDeliveryEarningMinor": "number",
+          "deliveryTaxMinor": "number",
+          "deliveryTotalMinor": "number",
+          "deliverySettingsSnapshot": {
+            "deliveryPerKmMinor": "number",
+            "driverPerKmMinor": "number",
+            "driverRadiusKm": "number",
+            "stationSearchRadiusKm": "number",
+            "taxPercent": "number"
+          },
+          "station": {
+            "_id": "string",
+            "name": "string",
+            "unitId": "string"
+          },
+          "stockReserved": "boolean",
+          "timeline": [
+            {
+              "status": "string",
+              "at": "string",
+              "actor": "string"
+            }
+          ],
+          "createdAt": "string",
+          "updatedAt": "string",
+          "unitId": "string"
+        }
+      ]
+    },
+    {
+      "operation": "getStationOrdersById",
+      "folder": "08",
+      "method": "GET",
+      "path": "/station/orders/:id",
+      "summary": "Inspect your station delivery order",
+      "ui": "/orders",
+      "outcome": "live success",
+      "status": 200,
+      "message": "Request successful",
+      "responseDataShape": {
+        "_id": "string",
+        "number": "string",
+        "user": {
+          "_id": "string",
+          "name": "string",
+          "unitId": "string"
+        },
+        "fuel": {
+          "_id": "string",
+          "name": "string",
+          "code": "string",
+          "unitId": "string"
+        },
+        "fuelName": "string",
+        "quantityMl": "number",
+        "unitPriceMinor": "number",
+        "totalMinor": "number",
+        "deliveryFeeMinor": "number",
+        "driverFeeMinor": "number",
+        "currency": "string",
+        "address": {
+          "_id": "string",
+          "user": "string",
+          "label": "string",
+          "recipient": "string",
+          "phone": "string",
+          "line1": "string",
+          "city": "string",
+          "country": "string",
+          "latitude": "number",
+          "longitude": "number",
+          "isDefault": "boolean",
+          "createdAt": "string",
+          "updatedAt": "string",
+          "unitId": "string"
+        },
+        "scheduledAt": "string",
+        "windowEnd": "string",
+        "notes": "string",
+        "paymentMethod": "string",
+        "paymentStatus": "string",
+        "paymentAttempts": "number",
+        "status": "string",
+        "distanceMetres": "number",
+        "distanceBasis": "string",
+        "itemsSubtotalMinor": "number",
+        "taxPercent": "number",
+        "taxMinor": "number",
+        "platformDeliveryEarningMinor": "number",
+        "deliveryTaxMinor": "number",
+        "deliveryTotalMinor": "number",
+        "deliverySettingsSnapshot": {
+          "deliveryPerKmMinor": "number",
+          "driverPerKmMinor": "number",
+          "driverRadiusKm": "number",
+          "stationSearchRadiusKm": "number",
+          "taxPercent": "number"
+        },
+        "station": "string",
+        "stockReserved": "boolean",
+        "timeline": [
+          {
+            "status": "string",
+            "at": "string",
+            "actor": "string"
+          }
+        ],
+        "createdAt": "string",
+        "updatedAt": "string",
+        "unitId": "string"
+      }
+    },
+    {
+      "operation": "postStationOrdersByIdAccept",
+      "folder": "08",
+      "method": "POST",
+      "path": "/station/orders/:id/accept",
+      "summary": "Station approves order and reserves fuel for nearby drivers",
+      "ui": "/orders",
+      "outcome": "live success",
+      "status": 200,
+      "message": "Station accepted; finding a nearby driver",
+      "responseDataShape": {
+        "_id": "string",
+        "number": "string",
+        "user": "string",
+        "fuel": "string",
+        "fuelName": "string",
+        "quantityMl": "number",
+        "unitPriceMinor": "number",
+        "totalMinor": "number",
+        "deliveryFeeMinor": "number",
+        "driverFeeMinor": "number",
+        "currency": "string",
+        "address": {
+          "_id": "string",
+          "user": "string",
+          "label": "string",
+          "recipient": "string",
+          "phone": "string",
+          "line1": "string",
+          "city": "string",
+          "country": "string",
+          "latitude": "number",
+          "longitude": "number",
+          "isDefault": "boolean",
+          "createdAt": "string",
+          "updatedAt": "string",
+          "unitId": "string"
+        },
+        "scheduledAt": "string",
+        "windowEnd": "string",
+        "notes": "string",
+        "paymentMethod": "string",
+        "paymentStatus": "string",
+        "paymentAttempts": "number",
+        "status": "string",
+        "distanceMetres": "number",
+        "distanceBasis": "string",
+        "itemsSubtotalMinor": "number",
+        "taxPercent": "number",
+        "taxMinor": "number",
+        "platformDeliveryEarningMinor": "number",
+        "deliveryTaxMinor": "number",
+        "deliveryTotalMinor": "number",
+        "deliverySettingsSnapshot": {
+          "deliveryPerKmMinor": "number",
+          "driverPerKmMinor": "number",
+          "driverRadiusKm": "number",
+          "stationSearchRadiusKm": "number",
+          "taxPercent": "number"
+        },
+        "station": "string",
+        "stockReserved": "boolean",
+        "timeline": [
+          {
+            "status": "string",
+            "at": "string",
+            "actor": "string"
+          }
+        ],
+        "createdAt": "string",
+        "updatedAt": "string",
+        "unitId": "string",
+        "stationAcceptedAt": "string"
+      }
+    },
+    {
+      "operation": "postStationOrdersByIdReject",
+      "folder": "08",
+      "method": "POST",
+      "path": "/station/orders/:id/reject",
+      "summary": "Reject pending station order and refund captured payment",
+      "ui": "/orders",
+      "outcome": "live success",
+      "status": 200,
+      "message": "Order rejected; any captured payment refunded",
+      "responseDataShape": {
+        "_id": "string",
+        "number": "string",
+        "user": "string",
+        "fuel": "string",
+        "fuelName": "string",
+        "quantityMl": "number",
+        "unitPriceMinor": "number",
+        "totalMinor": "number",
+        "deliveryFeeMinor": "number",
+        "driverFeeMinor": "number",
+        "currency": "string",
+        "address": {
+          "_id": "string",
+          "user": "string",
+          "label": "string",
+          "recipient": "string",
+          "phone": "string",
+          "line1": "string",
+          "city": "string",
+          "country": "string",
+          "latitude": "number",
+          "longitude": "number",
+          "isDefault": "boolean",
+          "createdAt": "string",
+          "updatedAt": "string",
+          "unitId": "string"
+        },
+        "scheduledAt": "string",
+        "windowEnd": "string",
+        "notes": "string",
+        "paymentMethod": "string",
+        "paymentStatus": "string",
+        "paymentAttempts": "number",
+        "status": "string",
+        "distanceMetres": "number",
+        "distanceBasis": "string",
+        "itemsSubtotalMinor": "number",
+        "taxPercent": "number",
+        "taxMinor": "number",
+        "platformDeliveryEarningMinor": "number",
+        "deliveryTaxMinor": "number",
+        "deliveryTotalMinor": "number",
+        "deliverySettingsSnapshot": {
+          "deliveryPerKmMinor": "number",
+          "driverPerKmMinor": "number",
+          "driverRadiusKm": "number",
+          "stationSearchRadiusKm": "number",
+          "taxPercent": "number"
+        },
+        "station": "string",
+        "stockReserved": "boolean",
+        "timeline": [
+          {
+            "status": "string",
+            "at": "string",
+            "actor": "string"
+          }
+        ],
+        "createdAt": "string",
+        "updatedAt": "string",
+        "unitId": "string",
+        "cancellationReason": "string"
+      }
+    },
+    {
+      "operation": "getSharedProfile",
+      "folder": "09",
+      "method": "GET",
+      "path": "/shared/profile",
+      "summary": "Current authenticated profile",
+      "ui": "/settings",
+      "outcome": "live success",
+      "status": 200,
+      "message": "Request successful",
+      "responseDataShape": {
+        "_id": "string",
+        "name": "string",
+        "email": "string",
+        "phone": "string",
+        "role": "string",
+        "active": "boolean",
+        "station": "string",
+        "photo": "string",
+        "language": "string",
+        "phoneVerified": "boolean",
+        "tokenVersion": "number",
+        "allowanceMl": "number",
+        "usedMl": "number",
+        "reservedMl": "number",
+        "createdAt": "string",
+        "updatedAt": "string",
+        "unitId": "string"
+      }
+    },
+    {
+      "operation": "patchSharedProfile",
+      "folder": "09",
+      "method": "PATCH",
+      "path": "/shared/profile",
+      "summary": "Update name, language, photo and push registration",
+      "ui": "/settings",
+      "outcome": "live success",
+      "status": 200,
+      "message": "Profile updated",
+      "responseDataShape": {
+        "_id": "string",
+        "name": "string",
+        "email": "string",
+        "role": "string",
+        "active": "boolean",
+        "station": "string",
+        "language": "string",
+        "phoneVerified": "boolean",
+        "tokenVersion": "number",
+        "allowanceMl": "number",
+        "usedMl": "number",
+        "reservedMl": "number",
+        "createdAt": "string",
+        "updatedAt": "string",
+        "unitId": "string",
+        "phone": "string",
+        "photo": "string"
+      }
+    },
+    {
+      "operation": "postSharedProfilePassword",
+      "folder": "09",
+      "method": "POST",
+      "path": "/shared/profile/password",
+      "summary": "Change password and revoke every session",
+      "ui": "/settings",
+      "outcome": "live success",
+      "status": 200,
+      "message": "Password changed. Please log in again.",
+      "responseDataShape": "null"
+    },
+    {
+      "operation": "postSharedProfileVerifyPhone",
+      "folder": "09",
+      "method": "POST",
+      "path": "/shared/profile/verify-phone",
+      "summary": "Verify the current account phone using a LOGIN OTP",
+      "ui": "/settings",
+      "outcome": "live success",
+      "status": 200,
+      "message": "Phone verified",
+      "responseDataShape": "null"
+    },
+    {
+      "operation": "postSharedProfilePin",
+      "folder": "09",
+      "method": "POST",
+      "path": "/shared/profile/pin",
+      "summary": "Set or change station POS PIN using account password",
+      "ui": "/settings",
+      "outcome": "live success",
+      "status": 200,
+      "message": "POS PIN updated",
+      "responseDataShape": "null"
+    },
+    {
+      "operation": "postSharedAuthLogout",
+      "folder": "09",
+      "method": "POST",
+      "path": "/shared/auth/logout",
+      "summary": "Revoke the current session immediately",
+      "ui": "Sidebar \u2192 Sign out",
+      "outcome": "live success",
+      "status": 200,
+      "message": "Logged out successfully",
+      "responseDataShape": "null"
+    },
+    {
+      "operation": "getSharedWallet",
+      "folder": "09",
+      "method": "GET",
+      "path": "/shared/wallet",
+      "summary": "Personal or manager corporate wallet balance",
+      "ui": "/wallet",
+      "outcome": "live success",
+      "status": 200,
+      "message": "Request successful",
+      "responseDataShape": {
+        "_id": "string",
+        "owner": "string",
+        "ownerType": "string",
+        "balanceMinor": "number",
+        "createdAt": "string",
+        "currency": "string",
+        "unitId": "string",
+        "updatedAt": "string"
+      }
+    },
+    {
+      "operation": "getSharedWalletTransactions",
+      "folder": "09",
+      "method": "GET",
+      "path": "/shared/wallet/transactions",
+      "summary": "Paginated wallet statement; dates are inclusive ISO timestamps",
+      "ui": "/wallet",
+      "outcome": "live success",
+      "status": 200,
+      "message": "Wallet transactions retrieved",
+      "responseDataShape": []
+    },
+    {
+      "operation": "postSharedPayments",
+      "folder": "09",
+      "method": "POST",
+      "path": "/shared/payments",
+      "summary": "Create an external order payment or wallet top-up intent",
+      "ui": "Not exposed: customer payment workflows",
+      "outcome": "guard or validation response verified",
+      "status": 403,
+      "message": "You do not have access to this resource"
+    },
+    {
+      "operation": "getSharedPaymentsById",
+      "folder": "09",
+      "method": "GET",
+      "path": "/shared/payments/:id",
+      "summary": "Retrieve payment status",
+      "ui": "Not exposed: customer payment workflows",
+      "outcome": "guard or validation response verified",
+      "status": 422,
+      "message": "Please check the submitted fields"
+    },
+    {
+      "operation": "postSharedPaymentsByIdCheckout",
+      "folder": "09",
+      "method": "POST",
+      "path": "/shared/payments/:id/checkout",
+      "summary": "Create or retrieve provider checkout URL; safely retry this endpoint",
+      "ui": "Not exposed: customer payment workflows",
+      "outcome": "guard or validation response verified",
+      "status": 422,
+      "message": "Please check the submitted fields"
+    },
+    {
+      "operation": "getSharedNotifications",
+      "folder": "09",
+      "method": "GET",
+      "path": "/shared/notifications",
+      "summary": "List in-app notifications",
+      "ui": "/notifications",
+      "outcome": "live success",
+      "status": 200,
+      "message": "Notifications retrieved",
+      "responseDataShape": [
+        {
+          "_id": "string",
+          "user": "string",
+          "title": "string",
+          "body": "string",
+          "createdAt": "string",
+          "updatedAt": "string",
+          "unitId": "string"
+        }
+      ]
+    },
+    {
+      "operation": "patchSharedNotificationsByIdRead",
+      "folder": "09",
+      "method": "PATCH",
+      "path": "/shared/notifications/:id/read",
+      "summary": "Mark your notification as read",
+      "ui": "/notifications",
+      "outcome": "live success",
+      "status": 200,
+      "message": "Request successful",
+      "responseDataShape": {
+        "_id": "string",
+        "user": "string",
+        "title": "string",
+        "body": "string",
+        "createdAt": "string",
+        "updatedAt": "string",
+        "unitId": "string",
+        "readAt": "string"
+      }
+    },
+    {
+      "operation": "getSharedSupportTickets",
+      "folder": "09",
+      "method": "GET",
+      "path": "/shared/support/tickets",
+      "summary": "List your support tickets; admins can see all",
+      "ui": "/support",
+      "outcome": "live success",
+      "status": 200,
+      "message": "Support tickets retrieved",
+      "responseDataShape": []
+    },
+    {
+      "operation": "postSharedSupportTickets",
+      "folder": "09",
+      "method": "POST",
+      "path": "/shared/support/tickets",
+      "summary": "Create a support ticket",
+      "ui": "/support",
+      "outcome": "guard or validation response verified",
+      "status": 422,
+      "message": "Please check the submitted fields"
+    },
+    {
+      "operation": "postSharedSupportTicketsByIdReplies",
+      "folder": "09",
+      "method": "POST",
+      "path": "/shared/support/tickets/:id/replies",
+      "summary": "Reply to a ticket; admins can update its status",
+      "ui": "/support",
+      "outcome": "guard or validation response verified",
+      "status": 422,
+      "message": "Please check the submitted fields"
+    },
+    {
+      "operation": "getSharedOrdersByIdMessages",
+      "folder": "09",
+      "method": "GET",
+      "path": "/shared/orders/:id/messages",
+      "summary": "Read order chat; customer, assigned driver or admin only",
+      "ui": "Order messages; send availability follows assignment/status and permissions",
+      "outcome": "live success",
+      "status": 200,
+      "message": "Messages retrieved newest first",
+      "responseDataShape": []
+    },
+    {
+      "operation": "postSharedOrdersByIdMessagesRead",
+      "folder": "09",
+      "method": "POST",
+      "path": "/shared/orders/:id/messages/read",
+      "summary": "Mark received order messages as read",
+      "ui": "Order messages; send availability follows assignment/status and permissions",
+      "outcome": "guard or validation response verified",
+      "status": 403,
+      "message": "Only chat participants can mark messages read"
+    },
+    {
+      "operation": "postSharedOrdersByIdMessages",
+      "folder": "09",
+      "method": "POST",
+      "path": "/shared/orders/:id/messages",
+      "summary": "Send an order chat message",
+      "ui": "Order messages; send availability follows assignment/status and permissions",
+      "outcome": "guard or validation response verified",
+      "status": 409,
+      "message": "Chat is closed for this order"
+    },
+    {
+      "operation": "postSharedFiles",
+      "folder": "09",
+      "method": "POST",
+      "path": "/shared/files",
+      "summary": "Upload a private PDF, JPEG or PNG; maximum 5 MB",
+      "ui": "/files; /stations photos; account avatar",
+      "outcome": "live success",
+      "status": 201,
+      "message": "File uploaded",
+      "responseDataShape": {
+        "id": "string",
+        "originalName": "string",
+        "mimeType": "string",
+        "size": "number",
+        "downloadUrl": "string"
+      }
+    },
+    {
+      "operation": "getSharedFilesById",
+      "folder": "09",
+      "method": "GET",
+      "path": "/shared/files/:id",
+      "summary": "Download your private file; admins may review driver documents",
+      "ui": "/files; /stations photos; account avatar",
+      "outcome": "live success",
+      "status": 200,
+      "message": "Binary file downloaded",
+      "responseDataShape": {
+        "mimeType": "string",
+        "size": "number"
+      }
+    }
+  ]
+}

@@ -1,72 +1,73 @@
-# NeyFuel Partner Fuel Station Portal
+# Ney Fuel Partner Station Portal
 
-A responsive React + Vite + TypeScript frontend for station owners and operators. The portal uses persistent, related mock records and simulated financial workflows. It does not process payments or connect to native POS hardware.
+A live React station workspace connected to the Ney Fuel API. Station users manage their retail fuel prices, profile, delivery requests and dispensing operations without simulated business records.
 
 ## Run locally
 
-Node.js 22.12+ or 24 LTS recommended.
-
 ```sh
 npm install
+cp .env.example .env.local
 npm run dev
 ```
 
-On Windows PowerShell with script restrictions, use `npm.cmd` in place of `npm`.
+The application is mounted at **`/partner/station/`**. Vite prints the available local port. Keep this base path when opening a deep link.
 
-```sh
-npm run build
-npm test
-npm run preview
+The supplied example uses the development tunnel:
+
+```dotenv
+VITE_AUTH_MODE=api
+VITE_API_BASE_URL=https://qkwbdl37-5121.inc1.devtunnels.ms/api/v1
+VITE_AUTH_API_BASE_URL=https://qkwbdl37-5121.inc1.devtunnels.ms/api/v1/public/auth
+VITE_DATA_MODE=api
 ```
 
-Copy `.env.example` to `.env.local` to override configuration. Mock mode is the default. Vite serves the portal at the URL printed in the terminal. Hosting must fall back to `index.html` for client-side routes.
+These are public service URLs. Do not put passwords, access tokens, refresh tokens or POS device credentials into Vite environment variables. Set the intended backend URLs before building for deployment.
 
-## Demo credentials
+## Workspace
 
-| Access | Email | Password |
-|---|---|---|
-| Owner | owner@neyfuel.com | NeyFuel@2026 |
-| Operator | operator@neyfuel.com | NeyFuel@2026 |
+- **Overview:** station sales, dispensed quantities, unsettled totals, fuel stock and daily sales chart.
+- **Fuel prices:** station-specific prices per litre and fuel availability. Unconfigured retail prices are shown explicitly. XAF prices use whole FCFA units.
+- **Delivery requests:** inspect, approve and reject eligible customer orders. Order messages follow assignment/status and backend permissions.
+- **Fuel dispensing:** verify QR/RFID credentials, enter quantity/mileage/PIN, review and commit using an authorized POS device token. Completed transactions have printable receipts.
+- **Operations:** inventory/movements, authorizations, devices/heartbeat, transactions, settlements and reports.
+- **Station profile:** contact/location details, weekly hours, facilities and photo upload/gallery.
+- **Account:** name/language/photo, password, phone verification, POS PIN, notifications, wallet/ledger, support and private documents.
 
-Sign in at `/auth/login`. Sessions last eight hours. Owner registration, forgot/reset password, and verification (`123456`) are browser-local simulations. Registered users join the existing demo owner workspace. No email is sent and demo credentials are stored unencrypted; use fictional information only.
+There are no station-side endpoints for creating staff, registering devices, recording stock refills or creating settlements in the supplied collection. Those administrator functions are not simulated in this workspace. Existing legacy demo modules remain outside the live router.
 
-## Pages and workflows
+## Authentication and scope
 
-- Overview with date filters, interactive revenue and transaction charts, fuel distribution, payment breakdown, inventory, POS status, and recent activity.
-- Station selector scopes all business pages to one of two demo stations.
-- Station profiles with validated edits.
-- Staff creation, editing, assignment, activation/deactivation, activity, deletion guards, filtering, sorting, and pagination.
-- Fuel tank configuration, refills, signed adjustments, threshold alerts, movement history, and CSV exports.
-- SUNMI V2 Pro mock registry, assignment, online/offline status, activity, and simulated sync.
-- Transaction filters, sales, digital receipts, CSV, and print / Save as PDF through the browser print dialog.
-- Corporate QR/RFID references with demo expiry, quantity, fuel, mileage, and single-use validation.
-- Settlement history, date/status filters, reconciliation details, exports, and clearly marked mock completion.
-- Fuel, inventory, transaction, settlement, operator, and period reports using shared records.
-- Invoices derived from transaction records, receipt preview, print and PDF via browser print.
-- Notification history, filters, unread count, individual/all read actions.
-- Local profile, password, notification preferences, persistent light/dark themes, and English/French navigation and dashboard copy.
-- Settings → Demo workspace resets business data. This does not reset account credentials or preferences.
+Station accounts are provisioned by the administrator. Login uses `/public/auth/login`; the backend `STATION` role and actual `user.station` assignment are preserved. Station endpoints enforce account ownership on the server. No station assignment is inferred from an email or demo record.
 
-Operators have access to operational pages and cannot invoke owner mutations. Owner-only routes and service guards are both present. This is a frontend convenience, not a security boundary; production must enforce authorization server-side.
+Access/refresh tokens are stored in the current tab. Sessions refresh automatically; concurrent refreshes share one request. Temporary refresh network failures retain credentials for retry. Incorrect current-password responses do not trigger session rotation or sign-out. Logout calls `/shared/auth/logout` before clearing local state. Local storage persists interface preferences, rather than authenticated sessions or business records.
 
-## Data architecture
+Customer OTP login, driver registration and external payment creation do not grant station access. See [authentication details](AUTH_API.md).
 
-`src/types` defines shared contracts. `src/services/mock/seed.ts` creates related station datasets; `engine.ts` validates and applies sales and stock changes. The repository selects mock storage or Axios requests based on `VITE_DATA_MODE`. All pages obtain data through TanStack Query hooks; Zustand persists session and UI preferences. Forms use React Hook Form + Zod; charts use Recharts; Tailwind is available alongside the shared CSS design system.
+## Validation and testing
 
-Completed demo sales atomically reduce stock, create a stock movement, generate notification/receipt records, and consume a linked authorization. Reports calculate from completed transactions. Seed inventory is the opening available tank balance; historical transactions predate that opening balance and are not deducted again. Settlement amounts are derived from linked corporate transactions. Financial values use Ghana cedis (GHS); fuel volumes use liters.
+```sh
+npm test
+npm run typecheck
+npm run build
+```
 
-Data persists under `neyfuel-database-v1` in localStorage. Local mock writes are synchronous and intended for a single browser tab; this is not a concurrent transaction service. CSV exports protect spreadsheet formula prefixes. Preferences persist under `neyfuel-preferences-v1`.
+There are **56 passing tests**, including 42 API/authentication checks and 14 existing inventory-engine tests. The production build is generated in `dist/`.
 
-## Future API integration
+[Live verification evidence](docs/STATION_API_VERIFICATION.md) records all 22 Station & POS endpoints, relevant folder 01/09 behavior, browser checks and the limitations of individual write-path tests. The [sanitized JSON report](docs/station-api-verification.json) contains statuses and response shapes without credentials or personal response values.
 
-Set `VITE_DATA_MODE=api` and `VITE_API_BASE_URL` only after implementing the contracts in `src/services/repositories/portal.ts`: `GET /partner/snapshot`, resource updates/deletes, `POST /transactions`, `/inventory/adjustments`, `/notifications/read`, and `/settlements/:id/simulate`. These endpoints are proposed integration contracts, not an existing backend. Authentication currently remains demo-only; implement backend login/registration/reset, JWT refresh, server permissions, station scope, atomic authorization locking, stock transactions, wallet verification, audit records, and real settlement reconciliation before production use. No API token is fabricated or attached by the frontend.
+For repeatable read-only API diagnostics, supply `STATION_EMAIL` and `STATION_PASSWORD` through your shell environment, or use `STATION_ACCESS_TOKEN`:
 
-Native SUNMI scanning, NFC, and thermal printing are intentionally outside the web scope. PDF output uses the browser’s Save as PDF destination. Localization currently covers navigation and overview introductory text; other page content is English. Notification preferences are saved locally; event history retains all events.
+```sh
+npm run verify:station -- --output /tmp/neyfuel-station-check.json
+```
 
-Branding uses the supplied `public/logo/logo.png` across authentication screens, the sidebar, POS previews, printable receipts/invoices, the browser favicon, and the Apple touch icon. The shared `Brand` component preserves the original image proportions. Replace this asset to update the logo throughout the portal. The PowerFuel requirements document was not supplied.
+The verifier reads `.env.local`; `STATION_API_URL` overrides its backend URL. It checks lists and available detail records and logs out its own login session. It never changes profiles, prices, stock, orders, payments or messages. If using a supplied access token, it leaves that session active. Detail checks without existing records are reported as skipped.
 
-## Verification
+## Code layout
 
-`npm test` runs 14 tests covering transaction totals, stock reduction, immutable failure paths, invalid quantities, inactive operators, station mismatch, expired or over-limit authorizations, duplicate-use prevention, mileage, refill bounds, and corporate settlement linkage. `npm run build` performs strict TypeScript and unused-code checks and creates `dist/`.
-
-With the development server running, `node scripts/browser-check.mjs` uses an isolated headless Chromium browser to verify login, every main route, staff creation/deactivation/deletion, stock refills, owner and operator sales, receipts, print layout and PDF generation, single-use corporate dispensing, mobile layout/navigation, persistent theme, and operator route/action restrictions. It records screenshots, a PDF receipt, and results in ignored `test-results/`. It uses a separate disposable profile, clears only that profile's demo storage, and checks for uncaught exceptions. Set `BROWSER_PATH` to your installed Chromium/Chrome/Edge executable if auto-detection does not find it; set `PORTAL_URL` to use a different local port. Browser tests require permission to launch local subprocesses.
+- `src/services/api/contracts.json`: 53 method/path contracts from collection folders 01, 08 and 09, checked against live OpenAPI schemas.
+- `src/services/api/station.ts`: envelope handling, validation, paths, private uploads/downloads, currency/quantity formatting and transaction retry keys.
+- `src/services/api/liveAuth.ts`, `client.ts`, `tokens.ts`: login, token refresh and authenticated transport.
+- `src/features/live/`: live layouts and station screens.
+- `src/app/router/index.tsx`: station-scoped navigation.
+- `scripts/verify-station.mjs`: read-only backend diagnostics.

@@ -256,3 +256,36 @@ describe("API authentication", () => {
     expect(readTokens()).toBeNull();
   });
 });
+
+describe('station scope and session corrections', () => {
+  it('reads the actual station assignment returned by the backend', async () => {
+    authHttp.defaults.adapter = async config => { const data = response('STATION'); return ok({ ...data, user: { ...data.user, stationIds: undefined, station: { _id: 'internal-station', unitId: 'STN10008' } } }, config); };
+    expect((await liveAuth.login('station@example.test', 'test-password')).stationIds).toEqual(['STN10008']);
+  });
+  it('retains refresh credentials during a temporary network outage', async () => {
+    authHttp.defaults.adapter = async config => ok(response('STATION'), config);
+    await liveAuth.login('station@example.test', 'test-password');
+    authHttp.defaults.adapter = async config => { throw new AxiosError('Offline', 'ERR_NETWORK', config); };
+    await expect(liveAuth.refresh()).rejects.toThrow('reach');
+    expect(readTokens()?.refreshToken).toBe('refresh-1');
+  });
+  it('does not refresh or clear the station session for an incorrect current password', async () => {
+    authHttp.defaults.adapter = async config => ok(response('STATION'), config);
+    await liveAuth.login('station@example.test', 'test-password');
+    let calls = 0;
+    apiClient.defaults.adapter = async config => { calls++; throw new AxiosError('Incorrect password', 'ERR_BAD_REQUEST', config, undefined, { ...ok(null, config), status: 401, data: { success: false, message: 'Current password is incorrect', error: { code: 'INVALID_CREDENTIALS' } } }); };
+    await expect(apiClient.post('/shared/profile/password', { currentPassword: 'wrong', newPassword: 'new-password' })).rejects.toBeInstanceOf(AxiosError);
+    expect(calls).toBe(1); expect(readTokens()?.accessToken).toBe('access-1');
+  });
+  it('posts the public OTP verification contract without granting station access to a customer', async () => {
+    authHttp.defaults.adapter = async config => { expect(config.url).toBe('/otp/verify'); expect(JSON.parse(config.data)).toEqual({ phone: '+242069999999', code: '123456' }); return ok(response('USER'), config); };
+    await liveAuth.verifyOtp('+242069999999', '123456');
+    expect(readTokens()).toBeNull();
+  });
+  it('updates cached profile information without replacing the station scope', async () => {
+    authHttp.defaults.adapter = async config => ok(response('STATION'), config);
+    await liveAuth.login('station@example.test', 'test-password');
+    liveAuth.updateUser({ ...readTokens()!.user, name: 'Updated station operator' });
+    expect(readTokens()?.user.name).toBe('Updated station operator'); expect(readTokens()?.user.stationIds).toEqual(['station-1']);
+  });
+});

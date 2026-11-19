@@ -8,6 +8,7 @@ export interface AuthUser {
   active: boolean;
   companyId?: string;
   stationIds?: string[];
+  station?: string | { _id: string; unitId?: string };
   status?: string;
 }
 export interface AuthTokens {

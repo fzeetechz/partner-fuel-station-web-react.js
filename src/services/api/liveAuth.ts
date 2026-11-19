@@ -1,17 +1,29 @@
 import axios from "axios";
+import { authBaseUrl } from "./environment";
 import type { Session } from "../../types";
 import { useAppStore } from "../../store";
-import { readTokens, saveTokens, type AuthTokens } from "./tokens";
+import {
+  readTokens,
+  saveTokens,
+  type AuthTokens,
+  type AuthUser,
+} from "./tokens";
 
 export const authMode = import.meta.env.VITE_AUTH_MODE || "api";
 export const authHttp = axios.create({
-  baseURL: (
-    import.meta.env.VITE_AUTH_API_BASE_URL ||
-    "https://neyfuel.wise-hustlers.com/backend/api/v1/public/auth"
-  ).replace(/\/$/, ""),
+  baseURL: authBaseUrl,
   timeout: 15000,
   headers: { "Content-Type": "application/json" },
 });
+export class AuthApiError extends Error {
+  constructor(
+    message: string,
+    public status = 0,
+    public code = "AUTH_ERROR",
+  ) {
+    super(message);
+  }
+}
 interface Envelope<T> {
   success: boolean;
   message: string;
@@ -25,15 +37,20 @@ export async function authPost<T>(
   try {
     const response = await authHttp.post<Envelope<T>>(path, body);
     if (!response.data.success || (!allowNull && !response.data.data))
-      throw new Error(response.data.message || "Authentication failed.");
+      throw new AuthApiError(
+        response.data.message || "Authentication failed.",
+        400,
+      );
     return response.data.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
-      throw new Error(
+      throw new AuthApiError(
         error.response?.data?.message ||
           (error.response
             ? "Authentication failed. Please try again."
             : "Unable to reach the authentication server. Check your connection and try again."),
+        error.response?.status || 0,
+        error.response?.data?.error?.code,
       );
     }
     throw error;
@@ -54,7 +71,15 @@ function toSession(tokens: AuthTokens): Session {
     name: user.name,
     email: user.email,
     role,
-    stationIds: user.stationIds || [],
+    stationIds:
+      user.stationIds ||
+      (user.station
+        ? [
+            typeof user.station === "string"
+              ? user.station
+              : user.station.unitId || user.station._id,
+          ]
+        : []),
     expires: tokens.expiresAt,
   };
 }
@@ -85,6 +110,21 @@ export const liveAuth = {
         password,
       }),
     );
+  },
+  verifyOtp(phone: string, code: string, name?: string) {
+    return authPost<AuthTokens>("/otp/verify", {
+      phone: phone.trim(),
+      code: code.trim(),
+      ...(name ? { name: name.trim() } : {}),
+    });
+  },
+  updateUser(user: AuthUser) {
+    const tokens = readTokens();
+    if (!tokens) return;
+    const next = { ...tokens, user: { ...tokens.user, ...user } };
+    const session = toSession(next);
+    saveTokens(next);
+    useAppStore.getState().setSession(session);
   },
   async register(input: {
     name: string;
@@ -122,7 +162,10 @@ export const liveAuth = {
         password,
       },
       true,
-    );
+    ).then((data) => {
+      useAppStore.getState().setSession(null);
+      return data;
+    });
   },
   refresh(): Promise<Session> {
     if (refreshing) return refreshing;
@@ -131,7 +174,11 @@ export const liveAuth = {
     refreshing = authPost<AuthTokens>("/refresh", { refreshToken: token })
       .then((data) => accept(data, token))
       .catch((error) => {
-        if (readTokens()?.refreshToken === token)
+        if (
+          readTokens()?.refreshToken === token &&
+          error instanceof AuthApiError &&
+          [400, 401, 403].includes(error.status)
+        )
           useAppStore.getState().setSession(null);
         throw error;
       })
